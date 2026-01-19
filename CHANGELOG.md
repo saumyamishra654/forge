@@ -13,6 +13,19 @@ All notable changes to Forge will be documented in this file.
   - Meal types: breakfast, lunch, dinner, snack
   - Auto-cache API results to local database
 
+- **Supplement & Alcohol Logging**
+  - Supplement logging sheet with database supplements list
+  - Alcohol logging sheet with drink type presets (beer/wine/whiskey/vodka/cocktail)
+  - Calorie estimation for alcohol based on type and volume
+
+- **Cross-Domain Insights**
+  - InsightsRepository with real calculations
+  - ₹/calorie metric (food spend / calories consumed)
+  - ₹/gram protein metric
+  - ₹/workout metric (fitness spend / workout count)
+  - Motivational messages based on user data
+  - Summary stats panel with totals
+
 ## [0.1.0] - 2026-01-19
 
 ### Added
