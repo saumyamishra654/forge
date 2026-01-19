@@ -281,7 +281,6 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   }
   Widget _buildExerciseCard(SessionExercise exercise, int index) {
     return Card(
-      key: ValueKey(exercise.id),
       margin: const EdgeInsets.only(bottom: 12),
       color: AppTheme.card,
       child: Padding(
@@ -353,7 +352,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
           ],
         ),
       ),
-    ).animate().fadeIn(delay: Duration(milliseconds: 50 * index), duration: 300.ms);
+    ).animate(key: ValueKey(exercise.id)).fadeIn(delay: Duration(milliseconds: 50 * index), duration: 300.ms);
   }
 
   void _addExercise() {
