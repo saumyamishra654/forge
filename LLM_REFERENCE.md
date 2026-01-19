@@ -45,7 +45,8 @@ forge/
 │       │   └── presentation/screens/finance_home_screen.dart
 │       ├── insights/
 │       │   └── presentation/screens/insights_home_screen.dart
-│       └── body/                    # Weight & body fat tracking (NEW)
+│       └── body/                    # Weight & body fat tracking
+│           └── presentation/screens/body_tracking_screen.dart
 ├── assets/
 │   ├── icons/
 │   └── foods/                       # Seeded food images

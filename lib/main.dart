@@ -7,6 +7,7 @@ import 'features/exercise/presentation/screens/exercise_home_screen.dart';
 import 'features/nutrition/presentation/screens/nutrition_home_screen.dart';
 import 'features/finance/presentation/screens/finance_home_screen.dart';
 import 'features/insights/presentation/screens/insights_home_screen.dart';
+import 'features/body/presentation/screens/body_tracking_screen.dart';
 
 // Database provider
 final databaseProvider = Provider<AppDatabase>((ref) => AppDatabase());
@@ -220,6 +221,7 @@ class HomeScreen extends ConsumerWidget {
                     Icons.fitness_center_rounded,
                     'Log Workout',
                     AppTheme.exerciseGradient,
+                    null,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -229,6 +231,7 @@ class HomeScreen extends ConsumerWidget {
                     Icons.restaurant_rounded,
                     'Log Food',
                     AppTheme.nutritionGradient,
+                    null,
                   ),
                 ),
               ],
@@ -244,15 +247,20 @@ class HomeScreen extends ConsumerWidget {
                     Icons.receipt_long_rounded,
                     'Log Expense',
                     AppTheme.financeGradient,
+                    null,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _buildQuickAction(
                     context,
-                    Icons.qr_code_scanner_rounded,
-                    'Scan Barcode',
-                    AppTheme.accentGradient,
+                    Icons.monitor_weight_rounded,
+                    'Body Stats',
+                    AppTheme.primaryGradient,
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const BodyTrackingScreen()),
+                    ),
                   ),
                 ),
               ],
@@ -342,31 +350,34 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildQuickAction(BuildContext context, IconData icon, String label, LinearGradient gradient) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.card,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              gradient: gradient,
-              borderRadius: BorderRadius.circular(10),
+  Widget _buildQuickAction(BuildContext context, IconData icon, String label, LinearGradient gradient, VoidCallback? onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.card,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                gradient: gradient,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: Colors.white, size: 20),
             ),
-            child: Icon(icon, color: Colors.white, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.titleSmall,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

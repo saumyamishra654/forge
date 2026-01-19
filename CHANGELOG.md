@@ -45,8 +45,14 @@ All notable changes to Forge will be documented in this file.
   - Info card explaining how to unlock insights
 
 - **Body Tracking**
-  - WeightLogs table for daily weight tracking
-  - BodyFatLogs table with measurement method tracking
+  - WeightLogs and BodyFatLogs database tables
+  - Body tracking screen with current stats display
+  - Weight trend chart with line graph
+  - Weight change indicator (gain/loss)
+  - Add weight bottom sheet with notes
+  - Add body fat bottom sheet with method selection (estimate/scale/caliper/DEXA)
+  - Recent entries list with merged weight/body fat logs
+  - Navigation from home screen "Body Stats" quick action
 
 - **Navigation**
   - Bottom navigation with 4 tabs (Home, Exercise, Nutrition, Finance)
