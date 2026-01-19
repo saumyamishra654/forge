@@ -2,6 +2,17 @@
 
 All notable changes to Forge will be documented in this file.
 
+## [0.2.0] - 2026-01-19
+
+### Added
+- **Food Search & Barcode Scanner**
+  - FoodRepository with local database search and OpenFoodFacts API integration
+  - Barcode scanner screen using mobile_scanner
+  - Food search with text query and API fallback
+  - Food logging sheet with servings selector and meal type picker
+  - Meal types: breakfast, lunch, dinner, snack
+  - Auto-cache API results to local database
+
 ## [0.1.0] - 2026-01-19
 
 ### Added

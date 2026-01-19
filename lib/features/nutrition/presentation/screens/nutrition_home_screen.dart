@@ -3,8 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/database/database.dart';
-import '../../../../main.dart';
+import '../../../food_database/presentation/screens/food_search_screen.dart';
 
 class NutritionHomeScreen extends ConsumerStatefulWidget {
   const NutritionHomeScreen({super.key});
@@ -316,8 +315,9 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
   }
 
   void _showAddFoodSheet(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Food search coming soon!')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const FoodSearchScreen()),
     );
   }
 
@@ -334,8 +334,9 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
   }
 
   void _showBarcodeScannerPlaceholder(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Barcode scanner coming soon!')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const FoodSearchScreen()),
     );
   }
 
