@@ -62,7 +62,7 @@ class _SetLoggerState extends State<SetLogger> {
     final weight = double.tryParse(_weightController.text) ?? 0;
     final reps = int.tryParse(_repsController.text) ?? 0;
     
-    if (weight > 0 && reps > 0) {
+    if (weight >= 0 && reps > 0) {
       setState(() {
         _sets.add(SetData(reps: reps, weight: weight));
       });

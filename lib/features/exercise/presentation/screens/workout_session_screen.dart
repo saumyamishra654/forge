@@ -80,22 +80,27 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
         child: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // Workout Stats Header
-                    _buildStatsHeader(),
-                    
-                    // Exercise List
-                    if (_session.exercises.isEmpty)
-                      _buildEmptyState()
-                    else
-                      _buildExerciseList(),
-
-                    const SizedBox(height: 100), // Spacing for bottom button
-                  ],
-                ),
-              ),
+              child: _session.exercises.isEmpty
+                  ? Column(
+                      children: [
+                        _buildStatsHeader(),
+                        Expanded(child: _buildEmptyState()),
+                      ],
+                    )
+                  : ReorderableListView(
+                      header: _buildStatsHeader(),
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                      onReorder: (oldIndex, newIndex) {
+                        setState(() {
+                          if (newIndex > oldIndex) newIndex--;
+                          final item = _session.exercises.removeAt(oldIndex);
+                          _session.exercises.insert(newIndex, item);
+                        });
+                      },
+                      children: _session.exercises.asMap().entries.map((entry) {
+                        return _buildExerciseCard(entry.value, entry.key);
+                      }).toList(),
+                    ),
             ),
             
             // Add Exercise Button (Fixed at bottom)
@@ -274,26 +279,6 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       ).animate().fadeIn(duration: 400.ms),
     );
   }
-
-  Widget _buildExerciseList() {
-    return ReorderableListView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      padding: const EdgeInsets.all(16),
-      itemCount: _session.exercises.length,
-      onReorder: (oldIndex, newIndex) {
-        setState(() {
-          if (newIndex > oldIndex) newIndex--;
-          final item = _session.exercises.removeAt(oldIndex);
-          _session.exercises.insert(newIndex, item);
-        });
-      },
-      itemBuilder: (context, index) {
-        return _buildExerciseCard(_session.exercises[index], index);
-      },
-    );
-  }
-
   Widget _buildExerciseCard(SessionExercise exercise, int index) {
     return Card(
       key: ValueKey(exercise.id),
