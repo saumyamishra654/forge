@@ -1,0 +1,70 @@
+# Changelog
+
+All notable changes to Forge will be documented in this file.
+
+## [0.1.0] - 2026-01-19
+
+### Added
+- **Project Setup**
+  - Initialized Flutter project with iOS, Android, Web platforms
+  - Configured dependencies: Riverpod, Drift, fl_chart, mobile_scanner, google_mlkit
+  - Created feature-first folder structure
+  - Initialized git repo with remote origin
+
+- **Core**
+  - Drift database with full schema (exercises, foods, expenses, supplements, alcohol, weight, body fat)
+  - Premium dark theme with Inter font and feature-specific gradients
+  - Seeded 23 common exercises (Push/Pull/Legs/Cardio)
+  - Seeded 26 common Indian foods with accurate macros
+  - Seeded 10 expense categories with food-related flags
+  - Seeded 10 common supplements
+
+- **Exercise Module**
+  - Exercise home screen with date picker and workout stats
+  - Exercise picker with search and category filter chips
+  - Set logger with weight/reps input
+  - Auto-fill last used weight feature
+  - Swipe to delete sets, tap to mark complete
+  - Real-time volume calculation
+
+- **Nutrition Module**
+  - Nutrition home screen with macro ring chart (P/C/F)
+  - Quick add buttons for food, supplements, alcohol
+  - Barcode scanner button (placeholder)
+  - Empty state with call to action
+
+- **Finance Module**
+  - Finance home screen with spending summary cards
+  - Category breakdown pie chart
+  - Add expense bottom sheet with category picker
+  - Expense saving to database
+
+- **Insights Module**
+  - Insights home screen with placeholder metric cards
+  - ₹/Calorie, ₹/Protein, Gym ROI metrics (coming soon)
+  - Info card explaining how to unlock insights
+
+- **Body Tracking**
+  - WeightLogs table for daily weight tracking
+  - BodyFatLogs table with measurement method tracking
+
+- **Navigation**
+  - Bottom navigation with 4 tabs (Home, Exercise, Nutrition, Finance)
+  - Animated tab switching
+  - Custom nav bar with selected state styling
+
+- **Home Dashboard**
+  - Greeting based on time of day
+  - Today's summary card (calories, protein, spend)
+  - Quick action buttons for logging
+  - Insight of the day placeholder
+
+- **Documentation**
+  - LLM_REFERENCE.md for AI assistant guidance
+  - CHANGELOG.md (this file)
+  - TODO.md for future ideas
+
+### Technical Notes
+- Database schema designed with Firebase sync in mind
+- Cross-domain linking via `expenses.linkedFoodLogId` and `expense_categories.isFoodRelated`
+- Food sources support: seed, openfoodfacts, usda, user_contributed, custom

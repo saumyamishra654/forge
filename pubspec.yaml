@@ -1,0 +1,61 @@
+name: forge
+description: "Cross-domain health and finance tracking app"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI & Icons
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.1.0
+  flutter_animate: ^4.3.0
+  
+  # State Management
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+  
+  # Database
+  drift: ^2.14.1
+  sqlite3_flutter_libs: ^0.5.18
+  path_provider: ^2.1.1
+  path: ^1.8.3
+  
+  # Charts
+  fl_chart: ^0.66.0
+  
+  # Barcode & OCR
+  mobile_scanner: ^5.1.1
+  google_mlkit_text_recognition: ^0.11.0
+  image_picker: ^1.0.7
+  
+  # Food APIs
+  openfoodfacts: ^3.3.0
+  http: ^1.1.2
+  
+  # Utilities
+  intl: ^0.19.0
+  uuid: ^4.2.2
+  collection: ^1.18.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  
+  # Code generation
+  build_runner: ^2.4.8
+  drift_dev: ^2.14.1
+  riverpod_generator: ^2.3.9
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/
+    - assets/icons/
+    - assets/foods/
