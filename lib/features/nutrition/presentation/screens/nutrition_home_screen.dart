@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../food_database/presentation/screens/food_search_screen.dart';
+import '../widgets/supplement_alcohol_sheets.dart';
 
 class NutritionHomeScreen extends ConsumerStatefulWidget {
   const NutritionHomeScreen({super.key});
@@ -322,14 +323,20 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
   }
 
   void _showSupplementsSheet(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Supplements logging coming soon!')),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const SupplementLogSheet(),
     );
   }
 
   void _showAlcoholSheet(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Alcohol logging coming soon!')),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const AlcoholLogSheet(),
     );
   }
 
