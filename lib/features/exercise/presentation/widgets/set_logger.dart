@@ -22,12 +22,14 @@ class SetData {
 class SetLogger extends StatefulWidget {
   final Exercise exercise;
   final double? initialWeight;
+  final List<SetData>? initialSets;
   final Function(List<SetData>) onSetsChanged;
   
   const SetLogger({
     super.key,
     required this.exercise,
     this.initialWeight,
+    this.initialSets,
     required this.onSetsChanged,
   });
 
@@ -43,9 +45,15 @@ class _SetLoggerState extends State<SetLogger> {
   @override
   void initState() {
     super.initState();
+    // Load initial sets if editing
+    if (widget.initialSets != null) {
+      _sets.addAll(widget.initialSets!);
+    }
     // Pre-fill with last weight if available
     if (widget.initialWeight != null) {
       _weightController.text = widget.initialWeight.toString();
+    } else if (widget.initialSets?.isNotEmpty == true) {
+      _weightController.text = widget.initialSets!.last.weight.toString();
     }
     _repsController.text = '10'; // Default reps
   }

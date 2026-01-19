@@ -234,13 +234,21 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
   @override
   void initState() {
     super.initState();
-    _loadCategories();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadCategories();
+    });
   }
+  bool _isLoading = true;
 
   Future<void> _loadCategories() async {
     final db = ref.read(databaseProvider);
     final cats = await db.select(db.expenseCategories).get();
-    setState(() => _categories = cats);
+    if (mounted) {
+      setState(() {
+        _categories = cats;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -302,23 +310,28 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                   // Category
                   Text('Category', style: Theme.of(context).textTheme.labelMedium),
                   const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _categories.map((cat) {
-                      final isSelected = _selectedCategory?.id == cat.id;
-                      return FilterChip(
-                        label: Text('${cat.icon} ${cat.name}'),
-                        selected: isSelected,
-                        onSelected: (_) => setState(() => _selectedCategory = cat),
-                        backgroundColor: AppTheme.surfaceLight,
-                        selectedColor: AppTheme.financeColor.withOpacity(0.3),
-                        labelStyle: TextStyle(
-                          color: isSelected ? AppTheme.financeColor : AppTheme.textSecondary,
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                  if (_isLoading)
+                    const Center(child: CircularProgressIndicator())
+                  else if (_categories.isEmpty)
+                    Text('No categories found', style: Theme.of(context).textTheme.bodySmall)
+                  else
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _categories.map((cat) {
+                        final isSelected = _selectedCategory?.id == cat.id;
+                        return FilterChip(
+                          label: Text('${cat.icon} ${cat.name}'),
+                          selected: isSelected,
+                          onSelected: (_) => setState(() => _selectedCategory = cat),
+                          backgroundColor: AppTheme.surfaceLight,
+                          selectedColor: AppTheme.financeColor.withValues(alpha: 0.3),
+                          labelStyle: TextStyle(
+                            color: isSelected ? AppTheme.financeColor : AppTheme.textSecondary,
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   
                   const SizedBox(height: 20),
                   

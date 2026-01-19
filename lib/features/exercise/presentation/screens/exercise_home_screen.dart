@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:drift/drift.dart' show Value;
-import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/database/database.dart';
 import '../../../../main.dart';
-import '../widgets/exercise_picker.dart';
-import '../widgets/set_logger.dart';
+import 'workout_session_screen.dart';
 
 /// Data class for a workout day
 class WorkoutDay {
@@ -247,9 +245,9 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
           ],
         ),
         ElevatedButton.icon(
-          onPressed: () => _showAddExerciseSheet(context),
-          icon: const Icon(Icons.add, size: 20),
-          label: const Text('Log Workout'),
+          onPressed: () => _startWorkout(context),
+          icon: const Icon(Icons.play_arrow_rounded, size: 20),
+          label: const Text('Start Workout'),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppTheme.exerciseColor,
           ),
@@ -578,9 +576,9 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: () => _showAddExerciseSheet(context),
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Log Your First Workout'),
+              onPressed: () => _startWorkout(context),
+              icon: const Icon(Icons.play_arrow_rounded),
+              label: const Text('Start Your First Workout'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.exerciseColor,
               ),
@@ -591,17 +589,16 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
     ).animate().fadeIn(delay: 200.ms, duration: 400.ms);
   }
 
-  void _showAddExerciseSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => AddExerciseSheet(
-        onSaved: () {
-          _loadWorkoutData();
-        },
-      ),
+  void _startWorkout(BuildContext context) async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (context) => const WorkoutSessionScreen()),
     );
+    
+    // Refresh data if workout was saved
+    if (result == true) {
+      _loadWorkoutData();
+    }
   }
 
   String _formatDate(DateTime date) {
@@ -618,162 +615,5 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
     final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return '${weekdays[date.weekday - 1]}, ${date.day} ${months[date.month - 1]}';
-  }
-}
-
-/// Bottom sheet for adding a new exercise
-class AddExerciseSheet extends ConsumerStatefulWidget {
-  final VoidCallback? onSaved;
-  
-  const AddExerciseSheet({super.key, this.onSaved});
-
-  @override
-  ConsumerState<AddExerciseSheet> createState() => _AddExerciseSheetState();
-}
-
-class _AddExerciseSheetState extends ConsumerState<AddExerciseSheet> {
-  Exercise? _selectedExercise;
-  final List<SetData> _sets = [];
-  double? _lastWeight;
-  
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        children: [
-          // Handle bar
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppTheme.textMuted,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          
-          // Header
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Log Exercise',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close_rounded),
-                ),
-              ],
-            ),
-          ),
-          
-          // Exercise Picker
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: ExercisePicker(
-              onExerciseSelected: (exercise, lastWeight) {
-                setState(() {
-                  _selectedExercise = exercise;
-                  _lastWeight = lastWeight;
-                });
-              },
-            ),
-          ),
-          
-          // Last weight indicator
-          if (_lastWeight != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppTheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.history_rounded, color: AppTheme.primary, size: 20),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Last used: ${_lastWeight}kg',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: AppTheme.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ).animate().fadeIn(duration: 300.ms),
-          
-          const SizedBox(height: 12),
-          
-          // Set Logger
-          if (_selectedExercise != null)
-            Expanded(
-              child: SetLogger(
-                exercise: _selectedExercise!,
-                initialWeight: _lastWeight,
-                onSetsChanged: (sets) {
-                  setState(() => _sets.clear());
-                  _sets.addAll(sets);
-                },
-              ),
-            ),
-          
-          // Save Button
-          if (_selectedExercise != null && _sets.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _saveExercise,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.exerciseColor,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: const Text('Save Exercise'),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _saveExercise() async {
-    if (_selectedExercise == null || _sets.isEmpty) return;
-    
-    final db = ref.read(databaseProvider);
-    
-    for (final set in _sets) {
-      await db.into(db.exerciseLogs).insert(
-        ExerciseLogsCompanion.insert(
-          logDate: DateTime.now(),
-          exerciseId: _selectedExercise!.id,
-          sets: Value(1),
-          reps: Value(set.reps),
-          weight: Value(set.weight),
-        ),
-      );
-    }
-    
-    widget.onSaved?.call();
-    
-    if (mounted) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Exercise logged successfully!')),
-      );
-    }
   }
 }
