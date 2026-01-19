@@ -27,10 +27,15 @@ class WorkoutSession {
 }
 
 class SessionExercise {
+  final String id;
   final Exercise exercise;
   final List<SetData> sets;
 
-  SessionExercise({required this.exercise, required this.sets});
+  SessionExercise({
+    String? id,
+    required this.exercise,
+    required this.sets,
+  }) : id = id ?? DateTime.now().microsecondsSinceEpoch.toString();
 
   double get volume => sets.fold(0, (sum, s) => sum + (s.weight * s.reps));
 }
@@ -71,24 +76,56 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
             ),
         ],
       ),
-      body: Column(
-        children: [
-          // Workout Stats Header
-          _buildStatsHeader(),
-          
-          // Exercise List
-          Expanded(
-            child: _session.exercises.isEmpty
-                ? _buildEmptyState()
-                : _buildExerciseList(),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _addExercise,
-        backgroundColor: AppTheme.exerciseColor,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Exercise'),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // Workout Stats Header
+                    _buildStatsHeader(),
+                    
+                    // Exercise List
+                    if (_session.exercises.isEmpty)
+                      _buildEmptyState()
+                    else
+                      _buildExerciseList(),
+
+                    const SizedBox(height: 100), // Spacing for bottom button
+                  ],
+                ),
+              ),
+            ),
+            
+            // Add Exercise Button (Fixed at bottom)
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.background,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _addExercise,
+                  icon: const Icon(Icons.add_rounded),
+                  label: const Text('Add Exercise'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.exerciseColor,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -211,32 +248,37 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.fitness_center_rounded,
-            size: 64,
-            color: AppTheme.exerciseColor.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No exercises yet',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Tap "Add Exercise" to start your workout',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ],
-      ),
-    ).animate().fadeIn(duration: 400.ms);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.fitness_center_rounded,
+              size: 64,
+              color: AppTheme.exerciseColor.withValues(alpha: 0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No exercises yet',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Tap "Add Exercise" to start your workout',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ).animate().fadeIn(duration: 400.ms),
+    );
   }
 
   Widget _buildExerciseList() {
     return ReorderableListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
       padding: const EdgeInsets.all(16),
       itemCount: _session.exercises.length,
       onReorder: (oldIndex, newIndex) {
@@ -254,7 +296,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
 
   Widget _buildExerciseCard(SessionExercise exercise, int index) {
     return Card(
-      key: ValueKey(exercise),
+      key: ValueKey(exercise.id),
       margin: const EdgeInsets.only(bottom: 12),
       color: AppTheme.card,
       child: Padding(
@@ -355,7 +397,12 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
         initialSets: current.sets,
         onAdd: (exercise, sets) {
           setState(() {
-            _session.exercises[index] = SessionExercise(exercise: exercise, sets: sets);
+            // Preserve the original ID when updating
+            _session.exercises[index] = SessionExercise(
+              id: current.id,
+              exercise: exercise, 
+              sets: sets,
+            );
           });
         },
       ),

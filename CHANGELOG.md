@@ -26,6 +26,20 @@ All notable changes to Forge will be documented in this file.
   - Motivational messages based on user data
   - Summary stats panel with totals
 
+- **Workout Session Screen** (NEW)
+  - Full-screen workout with real-time stats (duration, exercises, sets, volume)
+  - Manual calorie input field
+  - Add/edit/delete exercises during workout
+  - Confirmation dialog before discarding
+  - Saves all exercise logs on finish
+
+### Fixed
+- **Workout Session**: Fixed 'ReorderableListView' key error by adding unique session exercise IDs
+- **UI**: Replaced floating action button with full-width bottom button for adding exercises
+- Expense category loading (post-frame callback for proper ref.read timing)
+- Added loading indicator for expense categories
+- Fixed category chip color deprecation (withValues)
+
 ## [0.1.0] - 2026-01-19
 
 ### Added

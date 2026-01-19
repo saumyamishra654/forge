@@ -37,6 +37,7 @@ forge/
 │   └── features/
 │       ├── exercise/
 │       │   ├── presentation/screens/exercise_home_screen.dart
+│       │   ├── presentation/screens/workout_session_screen.dart
 │       │   └── presentation/widgets/{exercise_picker, set_logger}.dart
 │       ├── nutrition/
 │       │   └── presentation/screens/nutrition_home_screen.dart
@@ -101,10 +102,18 @@ forge/
    - Insight of the day card
 
 2. **Exercise** (`ExerciseHomeScreen`)
-   - Date picker
-   - Workout stats (exercises, sets, volume)
-   - Exercise log list
-   - Add exercise bottom sheet with ExercisePicker + SetLogger
+   - Weekly volume stats (workouts, sets, tonnage)
+   - Body part volume breakdown
+   - Workout history grouped by day
+   - Auto-detected workout type (Push/Pull/Legs/Full Body)
+   - Start Workout → opens `WorkoutSessionScreen`
+
+2a. **Workout Session** (`WorkoutSessionScreen`)
+   - Real-time stats: duration, exercise count, sets, volume
+   - Manual calorie input
+   - Add/edit/delete exercises during session
+   - Discard confirmation dialog
+   - Finish saves all logs to database
 
 3. **Nutrition** (`NutritionHomeScreen`)
    - Macro ring chart (P/C/F)
@@ -120,8 +129,10 @@ forge/
 ### Modal Sheets
 - `AddExerciseSheet` - Exercise picker with category filter, last weight auto-fill
 - `AddFoodSheet` - Text search + barcode scanner
-- `AddExpenseSheet` - Category picker, amount input
+- `AddExpenseSheet` - Category picker with loading state, amount input
 - `BarcodeScannerScreen` - Full screen camera for scanning
+- `SupplementLogSheet` - Select from database supplements
+- `AlcoholLogSheet` - Drink type presets with calorie estimation
 
 ---
 
