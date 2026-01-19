@@ -198,7 +198,7 @@ class AppDatabase extends _$AppDatabase {
       ExercisesCompanion.insert(name: 'Jump Rope', category: 'Cardio', isCardio: const Value(true)),
       ExercisesCompanion.insert(name: 'Rowing', category: 'Cardio', isCardio: const Value(true)),
     ];
-    await batch((batch) => batch.insertAll(exercises, exercises));
+    await batch((batch) => batch.insertAll(this.exercises, exercises));
   }
 
   Future<void> _seedExpenseCategories() async {
