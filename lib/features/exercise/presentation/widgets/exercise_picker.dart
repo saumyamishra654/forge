@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:drift/drift.dart' show OrderingTerm;
+import 'package:drift/drift.dart' show OrderingTerm, Value;
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/database/database.dart';
 import '../../../../main.dart';
@@ -88,6 +88,23 @@ class _ExercisePickerState extends ConsumerState<ExercisePicker> {
         ),
         
         const SizedBox(height: 16),
+
+        // Create Custom Exercise Button
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: _showCreateExerciseDialog,
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Create Custom Exercise'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.primary,
+              side: const BorderSide(color: AppTheme.primary),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+          ),
+        ),
+        
+        const SizedBox(height: 16),
         
         // Category Chips
         SingleChildScrollView(
@@ -124,13 +141,27 @@ class _ExercisePickerState extends ConsumerState<ExercisePicker> {
         // Exercise List
         SizedBox(
           height: 250,
-          child: ListView.builder(
-            itemCount: _filteredExercises.length,
-            itemBuilder: (context, index) {
-              final exercise = _filteredExercises[index];
-              return _buildExerciseTile(exercise);
-            },
-          ),
+          child: _filteredExercises.isEmpty && _searchController.text.isNotEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('No exercises found'),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: _showCreateExerciseDialog,
+                        child: const Text('Create New Exercise'),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: _filteredExercises.length,
+                  itemBuilder: (context, index) {
+                    final exercise = _filteredExercises[index];
+                    return _buildExerciseTile(exercise);
+                  },
+                ),
         ),
       ],
     );
@@ -163,6 +194,88 @@ class _ExercisePickerState extends ConsumerState<ExercisePicker> {
         style: Theme.of(context).textTheme.bodySmall,
       ),
       trailing: const Icon(Icons.chevron_right_rounded, color: AppTheme.textMuted),
+    );
+  }
+
+  Future<void> _showCreateExerciseDialog() async {
+    final nameController = TextEditingController(text: _searchController.text);
+    final muscleGroupController = TextEditingController();
+    String selectedCategory = 'Push';
+
+    await showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          backgroundColor: AppTheme.surface,
+          title: const Text('Create Custom Exercise'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Exercise Name',
+                  hintText: 'e.g. Diamond Pushups',
+                ),
+                autofocus: true,
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: selectedCategory,
+                decoration: const InputDecoration(labelText: 'Category'),
+                items: ['Push', 'Pull', 'Legs', 'Cardio']
+                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                    .toList(),
+                onChanged: (v) => setState(() => selectedCategory = v!),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: muscleGroupController,
+                decoration: const InputDecoration(
+                  labelText: 'Muscle Group (Optional)',
+                  hintText: 'e.g. Triceps',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (nameController.text.trim().isEmpty) return;
+
+                final db = ref.read(databaseProvider);
+                await db.into(db.exercises).insert(
+                  ExercisesCompanion.insert(
+                    name: nameController.text.trim(),
+                    category: selectedCategory,
+                    muscleGroup: Value(muscleGroupController.text.trim().isEmpty 
+                        ? null 
+                        : muscleGroupController.text.trim()),
+                  ),
+                );
+                
+                if (mounted) {
+                  Navigator.pop(context);
+                  _searchController.clear();
+                  _loadExercises(); // Refresh list
+                  
+                  // Optional: Select the newly created exercise immediately
+                  // For now, refreshing the list is sufficient.
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Create'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

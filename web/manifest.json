@@ -1,11 +1,11 @@
 {
-    "name": "forge",
-    "short_name": "forge",
+    "name": "Forge Fitness",
+    "short_name": "Forge",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "Cross-domain health and finance tracking app",
+    "background_color": "#0F0F12",
+    "theme_color": "#E53535",
+    "description": "Premium health and finance tracking",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

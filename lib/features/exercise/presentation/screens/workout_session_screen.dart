@@ -312,7 +312,9 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                       Text(
-                        '${exercise.sets.length} sets • ${(exercise.volume / 1000).toStringAsFixed(2)}t volume',
+                        exercise.exercise.isCardio
+                            ? '${exercise.sets.length} sets • ${(exercise.sets.fold(0.0, (sum, s) => sum + (s.distance ?? 0))).toStringAsFixed(1)}km'
+                            : '${exercise.sets.length} sets • ${(exercise.volume / 1000).toStringAsFixed(2)}t volume',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
@@ -343,7 +345,9 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    '$setNum: ${set.weight}kg × ${set.reps}',
+                    exercise.exercise.isCardio
+                        ? '$setNum: ${set.time?.inMinutes ?? 0}m ${(set.time?.inSeconds ?? 0) % 60}s • ${set.distance}km'
+                        : '$setNum: ${set.weight}kg × ${set.reps}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 );
@@ -443,6 +447,8 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
             sets: Value(1),
             reps: Value(set.reps),
             weight: Value(set.weight),
+            durationMinutes: Value(set.time?.inMinutes),
+            distanceKm: Value(set.distance),
           ),
         );
       }
