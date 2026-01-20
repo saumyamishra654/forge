@@ -26,12 +26,6 @@ class ExerciseLogs extends Table {
   IntColumn get durationMinutes => integer().nullable()();
   RealColumn get distanceKm => real().nullable()();
   TextColumn get notes => text().nullable()();
-  // Sync columns
-  TextColumn get remoteId => text().nullable()();
-  IntColumn get syncStatus => integer().withDefault(const Constant(0))(); // 0=local, 1=syncing, 2=synced
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
 }
 
 // ============================================================================
@@ -62,12 +56,6 @@ class FoodLogs extends Table {
   IntColumn get foodId => integer().references(Foods, #id)();
   RealColumn get servings => real().withDefault(const Constant(1))();
   TextColumn get mealType => text()(); // breakfast, lunch, dinner, snack
-  // Sync columns
-  TextColumn get remoteId => text().nullable()();
-  IntColumn get syncStatus => integer().withDefault(const Constant(0))();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
 }
 
 class Supplements extends Table {
@@ -82,12 +70,6 @@ class SupplementLogs extends Table {
   DateTimeColumn get logDate => dateTime()();
   IntColumn get supplementId => integer().references(Supplements, #id)();
   RealColumn get dosage => real()();
-  // Sync columns
-  TextColumn get remoteId => text().nullable()();
-  IntColumn get syncStatus => integer().withDefault(const Constant(0))();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
 }
 
 class AlcoholLogs extends Table {
@@ -97,12 +79,6 @@ class AlcoholLogs extends Table {
   RealColumn get units => real()(); // standard drink units
   RealColumn get calories => real()();
   RealColumn get volumeMl => real().nullable()();
-  // Sync columns
-  TextColumn get remoteId => text().nullable()();
-  IntColumn get syncStatus => integer().withDefault(const Constant(0))();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
 }
 
 // ============================================================================
@@ -114,12 +90,6 @@ class WeightLogs extends Table {
   DateTimeColumn get logDate => dateTime()();
   RealColumn get weightKg => real()();
   TextColumn get notes => text().nullable()();
-  // Sync columns
-  TextColumn get remoteId => text().nullable()();
-  IntColumn get syncStatus => integer().withDefault(const Constant(0))();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
 }
 
 class BodyFatLogs extends Table {
@@ -128,12 +98,6 @@ class BodyFatLogs extends Table {
   RealColumn get bodyFatPercent => real()();
   TextColumn get method => text().withDefault(const Constant('estimate'))(); // scale, caliper, dexa, estimate
   TextColumn get notes => text().nullable()();
-  // Sync columns
-  TextColumn get remoteId => text().nullable()();
-  IntColumn get syncStatus => integer().withDefault(const Constant(0))();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
 }
 
 // ============================================================================
@@ -155,27 +119,6 @@ class Expenses extends Table {
   RealColumn get amount => real()(); // in rupees
   TextColumn get description => text().nullable()();
   IntColumn get linkedFoodLogId => integer().nullable().references(FoodLogs, #id)(); // for cross-domain linking
-  // Sync columns
-  TextColumn get remoteId => text().nullable()();
-  IntColumn get syncStatus => integer().withDefault(const Constant(0))();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
-}
-
-// ============================================================================
-// SYNC QUEUE TABLE
-// ============================================================================
-
-/// Tracks pending sync operations for offline-first architecture
-class SyncQueue extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get targetTable => text()();  // e.g. 'exerciseLogs', 'foodLogs'
-  IntColumn get recordId => integer()(); // ID of the record in that table
-  TextColumn get action => text()();     // 'create', 'update', 'delete'
-  DateTimeColumn get queuedAt => dateTime().withDefault(currentDateAndTime)();
-  IntColumn get retryCount => integer().withDefault(const Constant(0))();
-  TextColumn get errorMessage => text().nullable()();
 }
 
 // ============================================================================
@@ -194,13 +137,12 @@ class SyncQueue extends Table {
   BodyFatLogs,
   ExpenseCategories,
   Expenses,
-  SyncQueue,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(impl.connect());
 
   @override
-  int get schemaVersion => 2; // Bumped for sync columns
+  int get schemaVersion => 1;
 
   @override
   MigrationStrategy get migration {
@@ -210,59 +152,13 @@ class AppDatabase extends _$AppDatabase {
         await _seedInitialData();
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        // Migration from v1 to v2: Add sync columns to all log tables
-        if (from < 2) {
-          await _addSyncColumnsIfNeeded();
-          
-          // Create SyncQueue table if it doesn't exist
-          try {
-            await m.createTable(syncQueue);
-          } catch (e) {
-            // Table might already exist from partial migration
-            print('SyncQueue table already exists or error: $e');
-          }
-        }
+        // Future schema migrations go here
       },
+      // DISABLED: Migration was causing issues
+      // beforeOpen: (OpeningDetails details) async {
+      //   await _migrateExercisesOnce();
+      // },
     );
-  }
-
-  /// Idempotent helper to add sync columns - skips if column already exists
-  Future<void> _addSyncColumnsIfNeeded() async {
-    final tables = [
-      'exercise_logs',
-      'food_logs', 
-      'supplement_logs',
-      'alcohol_logs',
-      'weight_logs',
-      'body_fat_logs',
-      'expenses',
-    ];
-    
-    final columns = [
-      ('remote_id', 'TEXT'),
-      ('sync_status', 'INTEGER NOT NULL DEFAULT 0'),
-      ('created_at', 'INTEGER NOT NULL DEFAULT 0'),
-      ('updated_at', 'INTEGER NOT NULL DEFAULT 0'),
-      ('is_deleted', 'INTEGER NOT NULL DEFAULT 0'),
-    ];
-    
-    for (final table in tables) {
-      for (final (colName, colDef) in columns) {
-        try {
-          await customStatement('ALTER TABLE "$table" ADD COLUMN "$colName" $colDef');
-        } catch (e) {
-          // Column already exists - this is fine
-          print('Column $colName on $table: ${e.toString().contains('duplicate') ? 'already exists' : e}');
-        }
-      }
-      
-      // Set createdAt/updatedAt to logDate for existing records (if they're still 0)
-      try {
-        await customStatement('UPDATE "$table" SET "created_at" = "log_date", "updated_at" = "log_date" WHERE "created_at" = 0');
-      } catch (e) {
-        print('Update timestamps for $table failed: $e');
-      }
-    }
   }
 
   /// One-time migration to update existing exercises with proper muscle groups and cardio types

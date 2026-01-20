@@ -4,7 +4,6 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/database/database.dart';
 import '../../../../main.dart';
 import 'package:drift/drift.dart' show Value;
-import '../../providers/food_providers.dart';
 
 class EditFoodLogDialog extends ConsumerStatefulWidget {
   final FoodLog log;
@@ -83,20 +82,12 @@ class _EditFoodLogDialogState extends ConsumerState<EditFoodLogDialog> {
     );
 
     if (confirm == true) {
-      try {
-        final foodRepo = ref.read(foodRepositoryProvider);
-        await foodRepo.deleteLog(widget.log.id);
-        
-        if (mounted) {
-          Navigator.pop(context, true);
-        }
-      } catch (e) {
-        debugPrint('Error deleting log: $e');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text('Error deleting: $e')),
-          );
-        }
+      final db = ref.read(databaseProvider);
+      // Drift table delete syntax
+      await (db.delete(db.foodLogs)..where((tbl) => tbl.id.equals(widget.log.id))).go();
+      
+      if (mounted) {
+        Navigator.pop(context, true);
       }
     }
   }

@@ -7,14 +7,10 @@ import '../../../core/database/database.dart';
 /// 1. Local Database
 /// 2. OpenFoodFacts API
 /// 3. USDA FoodData Central (future)
-import '../../../core/sync/base_repository.dart';
-
-/// Repository for food search with fallback chain:
-/// 1. Local Database
-/// 2. OpenFoodFacts API
-/// 3. USDA FoodData Central (future)
-class FoodRepository extends BaseRepository {
-  FoodRepository(super.db);
+class FoodRepository {
+  final AppDatabase db;
+  
+  FoodRepository(this.db);
 
   /// Search foods by name (local database first, then API)
   Future<List<FoodSearchResult>> searchFoods(String query) async {
@@ -168,47 +164,39 @@ class FoodRepository extends BaseRepository {
 
   /// Save a food to local database (for user contributions or caching API results)
   Future<int> saveFood(Food food) async {
-    return performWithSync(
-      action: 'create',
-      table: 'foods',
-      performWrite: () => db.into(db.foods).insert(
-        FoodsCompanion.insert(
-          name: food.name,
-          barcode: Value(food.barcode),
-          calories: food.calories,
-          protein: food.protein,
-          carbs: food.carbs,
-          fat: food.fat,
-          fiber: Value(food.fiber),
-          sugar: Value(food.sugar),
-          servingSize: Value(food.servingSize),
-          servingUnit: Value(food.servingUnit),
-          source: Value(food.source),
-          imageUrl: Value(food.imageUrl),
-          verified: Value(food.verified),
-          createdBy: Value(food.createdBy),
-        ),
+    return await db.into(db.foods).insert(
+      FoodsCompanion.insert(
+        name: food.name,
+        barcode: Value(food.barcode),
+        calories: food.calories,
+        protein: food.protein,
+        carbs: food.carbs,
+        fat: food.fat,
+        fiber: Value(food.fiber),
+        sugar: Value(food.sugar),
+        servingSize: Value(food.servingSize),
+        servingUnit: Value(food.servingUnit),
+        source: Value(food.source),
+        imageUrl: Value(food.imageUrl),
+        verified: Value(food.verified),
+        createdBy: Value(food.createdBy),
       ),
     );
   }
 
   /// Log food consumption
-  Future<int> logFood({
+  Future<void> logFood({
     required int foodId,
     required double servings,
     required String mealType,
     DateTime? logDate,
   }) async {
-    return performWithSync(
-      action: 'create',
-      table: 'food_logs',
-      performWrite: () => db.into(db.foodLogs).insert(
-        FoodLogsCompanion.insert(
-          logDate: logDate ?? DateTime.now(),
-          foodId: foodId,
-          servings: Value(servings),
-          mealType: mealType,
-        ),
+    await db.into(db.foodLogs).insert(
+      FoodLogsCompanion.insert(
+        logDate: logDate ?? DateTime.now(),
+        foodId: foodId,
+        servings: Value(servings),
+        mealType: mealType,
       ),
     );
   }
@@ -258,17 +246,6 @@ class FoodRepository extends BaseRepository {
       protein: protein,
       carbs: carbs,
       fat: fat,
-    );
-  }
-  /// Delete a food log
-  Future<void> deleteLog(int id) {
-    return performWithSync(
-      action: 'delete',
-      table: 'food_logs',
-      performWrite: () async {
-        await (db.delete(db.foodLogs)..where((tbl) => tbl.id.equals(id))).go();
-        return id;
-      },
     );
   }
 }

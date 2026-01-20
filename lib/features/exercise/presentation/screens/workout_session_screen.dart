@@ -7,7 +7,6 @@ import '../../../../core/database/database.dart';
 import '../../../../main.dart';
 import '../widgets/exercise_picker.dart';
 import '../widgets/set_logger.dart';
-import '../../providers/exercise_providers.dart';
 
 /// Active workout session state
 class WorkoutSession {
@@ -513,13 +512,13 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     }
 
     try {
-      final exerciseRepo = ref.read(exerciseRepositoryProvider);
+      final db = ref.read(databaseProvider);
 
       // Save all exercises
       for (final sessionExercise in _session.exercises) {
         debugPrint('📝 Saving ${sessionExercise.exercise.name} with ${sessionExercise.sets.length} sets');
         for (final set in sessionExercise.sets) {
-          await exerciseRepo.logSet(
+          await db.into(db.exerciseLogs).insert(
             ExerciseLogsCompanion.insert(
               logDate: _session.startTime,
               exerciseId: sessionExercise.exercise.id,

@@ -4,7 +4,6 @@ import 'package:drift/drift.dart' as drift;
 import '../../../../core/theme/app_theme.dart';
 import '../../../../main.dart';
 import '../../../../core/database/database.dart';
-import '../../providers/food_providers.dart';
 
 class ManualFoodLogScreen extends ConsumerStatefulWidget {
   const ManualFoodLogScreen({super.key});
@@ -43,39 +42,32 @@ class _ManualFoodLogScreenState extends ConsumerState<ManualFoodLogScreen> {
 
     try {
       final db = ref.read(databaseProvider);
-      final foodRepo = ref.read(foodRepositoryProvider);
       final now = DateTime.now();
 
-      // 1. Create the Food entry via Repository (SYNC AWARE)
-      // We manually construct the Food object or just use raw data.
-      // Since repo.saveFood expects a Food object (row class), but we are creating new,
-      // it is easier if repo accepts companion or we create a dummy food object.
-      // Wait, repo.saveFood implementation uses FoodsCompanion.insert.
-      // But helper method `saveFood(Food food)` takes a row class.
-      // Let's assume we can create a temporary Food object with ID 0.
-      
-      final tempFood = Food(
-        id: 0,
-        name: _nameController.text.trim().isEmpty ? 'Quick Entry' : _nameController.text.trim(),
-        calories: double.parse(_caloriesController.text),
-        protein: double.tryParse(_proteinController.text) ?? 0,
-        carbs: double.tryParse(_carbsController.text) ?? 0,
-        fat: double.tryParse(_fatController.text) ?? 0,
-        servingSize: 1,
-        servingUnit: 'serving',
-        source: 'manual',
-        verified: false,
-        barcode: null, fiber: null, sugar: null, imageUrl: null, createdBy: null
+      // 1. Create the Food entry
+      final foodId = await db.into(db.foods).insert(
+        FoodsCompanion.insert(
+          name: _nameController.text.trim().isEmpty 
+              ? 'Quick Entry' 
+              : _nameController.text.trim(),
+          calories: double.parse(_caloriesController.text),
+          protein: double.tryParse(_proteinController.text) ?? 0,
+          carbs: double.tryParse(_carbsController.text) ?? 0,
+          fat: double.tryParse(_fatController.text) ?? 0,
+          source: const drift.Value('manual'),
+          servingSize: const drift.Value(1), // Logical serving
+          servingUnit: const drift.Value('serving'),
+        ),
       );
-      
-      final foodId = await foodRepo.saveFood(tempFood);
 
-      // 2. Create the Log entry via Repository (SYNC AWARE)
-      await foodRepo.logFood(
-        logDate: now,
-        foodId: foodId,
-        mealType: _selectedMealType,
-        servings: 1.0,
+      // 2. Create the Log entry
+      await db.into(db.foodLogs).insert(
+        FoodLogsCompanion.insert(
+          logDate: now,
+          foodId: foodId,
+          mealType: _selectedMealType,
+          servings: const drift.Value(1),
+        ),
       );
 
       // 3. Create Expense (Optional)
