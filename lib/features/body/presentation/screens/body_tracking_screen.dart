@@ -144,7 +144,7 @@ class _BodyTrackingScreenState extends ConsumerState<BodyTrackingScreen> {
                         child: _buildActionButton(
                           'Log Body Fat',
                           Icons.percent_rounded,
-                          AppTheme.accentGradient,
+                          AppTheme.primaryGradient,
                           () => _showAddBodyFatSheet(context),
                         ),
                       ),

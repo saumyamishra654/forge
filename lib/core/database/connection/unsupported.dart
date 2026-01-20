@@ -1,5 +1,8 @@
 import 'package:drift/drift.dart';
 
-LazyDatabase connect() {
-  throw UnsupportedError('Platform not supported for database connection');
+DatabaseConnection connect() {
+  throw UnsupportedError(
+    'No implementation was provided for database connection. '
+    'This platform is not supported.',
+  );
 }

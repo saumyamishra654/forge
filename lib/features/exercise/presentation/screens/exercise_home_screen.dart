@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart' show OrderingMode, OrderingTerm;
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/database/database.dart';
 import '../../../../main.dart';
 import 'workout_session_screen.dart';
+import 'exercise_history_screen.dart';
 
 /// Data class for a workout day
 class WorkoutDay {
@@ -54,6 +55,9 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
   double _weeklyVolume = 0;
   int _weeklyWorkouts = 0;
   int _weeklySets = 0;
+  double? _currentWeight;
+  double? _weightChange;
+  double? _currentBodyFat;
   bool _isLoading = true;
 
   @override
@@ -67,6 +71,32 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
     final now = DateTime.now();
     final weekAgo = now.subtract(const Duration(days: 7));
     
+    // Fetch body stats (Weight & Body Fat)
+    final weightLogs = await (db.select(db.weightLogs)
+      ..orderBy([(t) => OrderingTerm(expression: t.logDate, mode: OrderingMode.desc)])
+      ..limit(2))
+      .get();
+      
+    final fatLogs = await (db.select(db.bodyFatLogs)
+      ..orderBy([(t) => OrderingTerm(expression: t.logDate, mode: OrderingMode.desc)])
+      ..limit(1))
+      .get();
+      
+    double? currentWeight;
+    double? weightDiff;
+    double? currentFat;
+    
+    if (weightLogs.isNotEmpty) {
+      currentWeight = weightLogs.first.weightKg;
+      if (weightLogs.length > 1) {
+        weightDiff = currentWeight - weightLogs[1].weightKg;
+      }
+    }
+    
+    if (fatLogs.isNotEmpty) {
+      currentFat = fatLogs.first.bodyFatPercent;
+    }
+
     // Fetch all exercise logs
     final logs = await db.select(db.exerciseLogs).get();
     final exercises = await db.select(db.exercises).get();
@@ -122,10 +152,17 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
           volume: exVolume,
         ));
         
-        // Track body part volume (for the last 7 days)
+        // Track body part volume by muscle group (for the last 7 days)
         if (date.isAfter(weekAgo)) {
-          final category = exercise.category;
-          bodyPartVol[category] = (bodyPartVol[category] ?? 0) + exVolume;
+          // Parse comma-separated muscle groups
+          final muscles = exercise.muscleGroup?.split(',') ?? [exercise.category];
+          final perMuscleVol = exVolume / muscles.length; // Distribute volume evenly
+          for (var muscle in muscles) {
+            muscle = muscle.trim();
+            if (muscle.isNotEmpty) {
+              bodyPartVol[muscle] = (bodyPartVol[muscle] ?? 0) + perMuscleVol;
+            }
+          }
         }
       }
       
@@ -156,37 +193,44 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
       _weeklyVolume = weekVol;
       _weeklyWorkouts = workouts.where((w) => w.date.isAfter(weekAgo)).length;
       _weeklySets = weekSets;
+      _currentWeight = currentWeight;
+      _weightChange = weightDiff;
+      _currentBodyFat = currentFat;
       _isLoading = false;
     });
   }
 
   String _determineWorkoutType(Set<String> categories) {
+    // Single category
     if (categories.length == 1) {
-      switch (categories.first) {
-        case 'Chest':
-        case 'Shoulders':
-        case 'Arms':
-          if (categories.contains('Chest')) return 'Push';
-          return categories.first;
-        case 'Back':
-          return 'Pull';
-        case 'Legs':
-          return 'Legs';
-        case 'Core':
-          return 'Core';
-        case 'Cardio':
-          return 'Cardio';
-        default:
-          return categories.first;
-      }
+      final cat = categories.first;
+      if (cat == 'Cardio') return 'Cardio';
+      return cat; // Push, Pull, Legs, etc.
     }
     
     // Multi-category detection
-    if (categories.containsAll(['Chest', 'Shoulders'])) return 'Push';
-    if (categories.containsAll(['Back', 'Arms']) && !categories.contains('Chest')) return 'Pull';
-    if (categories.length >= 4) return 'Full Body';
-    if (categories.contains('Cardio') && categories.length == 1) return 'Cardio';
+    final hasPush = categories.contains('Push');
+    final hasPull = categories.contains('Pull');
+    final hasLegs = categories.contains('Legs');
+    final hasCardio = categories.contains('Cardio');
     
+    // Full Body: Push + Pull + Legs
+    if (hasPush && hasPull && hasLegs) return 'Full Body';
+    
+    // Upper: Push + Pull (no Legs)
+    if (hasPush && hasPull && !hasLegs) return 'Upper';
+    
+    // Push + Legs or Pull + Legs
+    if ((hasPush || hasPull) && hasLegs) return 'Mixed';
+    
+    // Cardio only with one other
+    if (hasCardio && categories.length == 2) {
+      final other = categories.firstWhere((c) => c != 'Cardio');
+      return '$other + Cardio';
+    }
+    
+    // Fallback
+    if (categories.length >= 3) return 'Full Body';
     return 'Mixed';
   }
 
@@ -207,8 +251,16 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
                     _buildHeader(),
                     const SizedBox(height: 24),
                     
+                    // Body Stats
+                    _buildBodyStats(),
+                    if (_currentWeight != null || _currentBodyFat != null) const SizedBox(height: 24),
+                    
                     // Weekly Stats
                     _buildWeeklyStats(),
+                    const SizedBox(height: 24),
+                    
+                    // Past Workouts
+                    _buildWorkoutHistory(),
                     const SizedBox(height: 24),
                     
                     // Body Part Volume
@@ -216,9 +268,6 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
                       _buildBodyPartVolume(),
                       const SizedBox(height: 24),
                     ],
-                    
-                    // Past Workouts
-                    _buildWorkoutHistory(),
                   ],
                 ),
               ),
@@ -244,16 +293,123 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
             ),
           ],
         ),
-        ElevatedButton.icon(
-          onPressed: () => _startWorkout(context),
-          icon: const Icon(Icons.play_arrow_rounded, size: 20),
-          label: const Text('Start Workout'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.exerciseColor,
-          ),
+        Row(
+          children: [
+            IconButton.filledTonal(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ExerciseHistoryScreen()),
+              ),
+              icon: const Icon(Icons.history_rounded),
+              style: IconButton.styleFrom(
+                backgroundColor: AppTheme.surfaceLight,
+                foregroundColor: AppTheme.textPrimary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            ElevatedButton.icon(
+              onPressed: () => _showStartOptions(context),
+              icon: const Icon(Icons.play_arrow_rounded, size: 20),
+              label: const Text('Start'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.exerciseColor,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+            ),
+          ],
         ),
       ],
     ).animate().fadeIn(duration: 400.ms);
+  }
+
+  Widget _buildBodyStats() {
+    if (_currentWeight == null && _currentBodyFat == null) return const SizedBox.shrink();
+
+    return Row(
+      children: [
+        if (_currentWeight != null) ...[
+          Expanded(
+            child: _buildBodyStatCard(
+              'Weight',
+              '${_currentWeight}kg',
+              _weightChange == null ? null : '${_weightChange! > 0 ? '+' : ''}${_weightChange!.toStringAsFixed(1)}kg',
+              Icons.monitor_weight_rounded,
+              Colors.blue.shade400,
+              isWeight: true,
+            ),
+          ),
+          if (_currentBodyFat != null) const SizedBox(width: 12),
+        ],
+        if (_currentBodyFat != null)
+          Expanded(
+            child: _buildBodyStatCard(
+              'Body Fat',
+              '$_currentBodyFat%',
+              null,
+              Icons.percent_rounded,
+              Colors.teal.shade400,
+            ),
+          ),
+      ],
+    ).animate().fadeIn(duration: 400.ms, delay: 100.ms);
+  }
+
+  Widget _buildBodyStatCard(String label, String value, String? subtitle, IconData icon, Color color, {bool isWeight = false}) {
+    Color? subtitleColor;
+    if (subtitle != null && isWeight) {
+      subtitleColor = subtitle.startsWith('-') ? AppTheme.success : AppTheme.error;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.card,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    value,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(width: 6),
+                    Text(
+                      subtitle,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: subtitleColor ?? AppTheme.textMuted,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildWeeklyStats() {
@@ -576,7 +732,7 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: () => _startWorkout(context),
+              onPressed: () => _showStartOptions(context),
               icon: const Icon(Icons.play_arrow_rounded),
               label: const Text('Start Your First Workout'),
               style: ElevatedButton.styleFrom(
@@ -589,10 +745,82 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
     ).animate().fadeIn(delay: 200.ms, duration: 400.ms);
   }
 
-  void _startWorkout(BuildContext context) async {
+  void _showStartOptions(BuildContext parentContext) {
+    showModalBottomSheet(
+      context: parentContext,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Start Workout',
+              style: Theme.of(sheetContext).textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(sheetContext);
+                _startWorkout(parentContext, null);
+              },
+              icon: const Icon(Icons.play_arrow_rounded),
+              label: const Text('Start Now'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.exerciseColor,
+                padding: const EdgeInsets.all(16),
+              ),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.pop(sheetContext);
+                _pickDateForWorkout(parentContext);
+              },
+              icon: const Icon(Icons.calendar_month_rounded),
+              label: const Text('Log Past Workout'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.all(16),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickDateForWorkout(BuildContext context) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().subtract(const Duration(days: 1)),
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context), // Use current theme
+          child: child!,
+        );
+      }
+    );
+    
+    if (picked != null && context.mounted) {
+      _startWorkout(context, picked);
+    }
+  }
+
+  void _startWorkout(BuildContext context, DateTime? date) async {
     final result = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(builder: (context) => const WorkoutSessionScreen()),
+      MaterialPageRoute(
+        builder: (context) => WorkoutSessionScreen(initialDate: date),
+      ),
     );
     
     // Refresh data if workout was saved

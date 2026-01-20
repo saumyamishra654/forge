@@ -10,8 +10,9 @@ class Exercises extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 1, max: 100)();
   TextColumn get category => text()(); // Push, Pull, Legs, Cardio
-  TextColumn get muscleGroup => text().nullable()();
+  TextColumn get muscleGroup => text().nullable()(); // Comma-separated: "Chest,Shoulders,Triceps"
   BoolColumn get isCardio => boolean().withDefault(const Constant(false))();
+  TextColumn get cardioType => text().nullable()(); // LISS, HIIT, or null for non-cardio
 }
 
 class ExerciseLogs extends Table {
@@ -25,6 +26,12 @@ class ExerciseLogs extends Table {
   IntColumn get durationMinutes => integer().nullable()();
   RealColumn get distanceKm => real().nullable()();
   TextColumn get notes => text().nullable()();
+  // Sync columns
+  TextColumn get remoteId => text().nullable()();
+  IntColumn get syncStatus => integer().withDefault(const Constant(0))(); // 0=local, 1=syncing, 2=synced
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
 }
 
 // ============================================================================
@@ -55,6 +62,12 @@ class FoodLogs extends Table {
   IntColumn get foodId => integer().references(Foods, #id)();
   RealColumn get servings => real().withDefault(const Constant(1))();
   TextColumn get mealType => text()(); // breakfast, lunch, dinner, snack
+  // Sync columns
+  TextColumn get remoteId => text().nullable()();
+  IntColumn get syncStatus => integer().withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
 }
 
 class Supplements extends Table {
@@ -69,6 +82,12 @@ class SupplementLogs extends Table {
   DateTimeColumn get logDate => dateTime()();
   IntColumn get supplementId => integer().references(Supplements, #id)();
   RealColumn get dosage => real()();
+  // Sync columns
+  TextColumn get remoteId => text().nullable()();
+  IntColumn get syncStatus => integer().withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
 }
 
 class AlcoholLogs extends Table {
@@ -78,6 +97,12 @@ class AlcoholLogs extends Table {
   RealColumn get units => real()(); // standard drink units
   RealColumn get calories => real()();
   RealColumn get volumeMl => real().nullable()();
+  // Sync columns
+  TextColumn get remoteId => text().nullable()();
+  IntColumn get syncStatus => integer().withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
 }
 
 // ============================================================================
@@ -89,6 +114,12 @@ class WeightLogs extends Table {
   DateTimeColumn get logDate => dateTime()();
   RealColumn get weightKg => real()();
   TextColumn get notes => text().nullable()();
+  // Sync columns
+  TextColumn get remoteId => text().nullable()();
+  IntColumn get syncStatus => integer().withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
 }
 
 class BodyFatLogs extends Table {
@@ -97,6 +128,12 @@ class BodyFatLogs extends Table {
   RealColumn get bodyFatPercent => real()();
   TextColumn get method => text().withDefault(const Constant('estimate'))(); // scale, caliper, dexa, estimate
   TextColumn get notes => text().nullable()();
+  // Sync columns
+  TextColumn get remoteId => text().nullable()();
+  IntColumn get syncStatus => integer().withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
 }
 
 // ============================================================================
@@ -118,6 +155,27 @@ class Expenses extends Table {
   RealColumn get amount => real()(); // in rupees
   TextColumn get description => text().nullable()();
   IntColumn get linkedFoodLogId => integer().nullable().references(FoodLogs, #id)(); // for cross-domain linking
+  // Sync columns
+  TextColumn get remoteId => text().nullable()();
+  IntColumn get syncStatus => integer().withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
+}
+
+// ============================================================================
+// SYNC QUEUE TABLE
+// ============================================================================
+
+/// Tracks pending sync operations for offline-first architecture
+class SyncQueue extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get targetTable => text()();  // e.g. 'exerciseLogs', 'foodLogs'
+  IntColumn get recordId => integer()(); // ID of the record in that table
+  TextColumn get action => text()();     // 'create', 'update', 'delete'
+  DateTimeColumn get queuedAt => dateTime().withDefault(currentDateAndTime)();
+  IntColumn get retryCount => integer().withDefault(const Constant(0))();
+  TextColumn get errorMessage => text().nullable()();
 }
 
 // ============================================================================
@@ -136,12 +194,13 @@ class Expenses extends Table {
   BodyFatLogs,
   ExpenseCategories,
   Expenses,
+  SyncQueue,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(impl.connect());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2; // Bumped for sync columns
 
   @override
   MigrationStrategy get migration {
@@ -150,7 +209,115 @@ class AppDatabase extends _$AppDatabase {
         await m.createAll();
         await _seedInitialData();
       },
+      onUpgrade: (Migrator m, int from, int to) async {
+        // Migration from v1 to v2: Add sync columns to all log tables
+        if (from < 2) {
+          await _addSyncColumnsIfNeeded();
+          
+          // Create SyncQueue table if it doesn't exist
+          try {
+            await m.createTable(syncQueue);
+          } catch (e) {
+            // Table might already exist from partial migration
+            print('SyncQueue table already exists or error: $e');
+          }
+        }
+      },
     );
+  }
+
+  /// Idempotent helper to add sync columns - skips if column already exists
+  Future<void> _addSyncColumnsIfNeeded() async {
+    final tables = [
+      'exercise_logs',
+      'food_logs', 
+      'supplement_logs',
+      'alcohol_logs',
+      'weight_logs',
+      'body_fat_logs',
+      'expenses',
+    ];
+    
+    final columns = [
+      ('remote_id', 'TEXT'),
+      ('sync_status', 'INTEGER NOT NULL DEFAULT 0'),
+      ('created_at', 'INTEGER NOT NULL DEFAULT 0'),
+      ('updated_at', 'INTEGER NOT NULL DEFAULT 0'),
+      ('is_deleted', 'INTEGER NOT NULL DEFAULT 0'),
+    ];
+    
+    for (final table in tables) {
+      for (final (colName, colDef) in columns) {
+        try {
+          await customStatement('ALTER TABLE "$table" ADD COLUMN "$colName" $colDef');
+        } catch (e) {
+          // Column already exists - this is fine
+          print('Column $colName on $table: ${e.toString().contains('duplicate') ? 'already exists' : e}');
+        }
+      }
+      
+      // Set createdAt/updatedAt to logDate for existing records (if they're still 0)
+      try {
+        await customStatement('UPDATE "$table" SET "created_at" = "log_date", "updated_at" = "log_date" WHERE "created_at" = 0');
+      } catch (e) {
+        print('Update timestamps for $table failed: $e');
+      }
+    }
+  }
+
+  /// One-time migration to update existing exercises with proper muscle groups and cardio types
+  Future<void> _migrateExercisesOnce() async {
+    // Map of exercise names to their updated data
+    final updates = {
+      // Push
+      'Bench Press': {'muscleGroup': 'Chest,Triceps,Shoulders'},
+      'Incline Bench Press': {'muscleGroup': 'Chest,Shoulders,Triceps'},
+      'Overhead Press': {'muscleGroup': 'Shoulders,Triceps'},
+      'Dumbbell Shoulder Press': {'muscleGroup': 'Shoulders,Triceps'},
+      'Tricep Pushdown': {'muscleGroup': 'Triceps'},
+      'Dips': {'muscleGroup': 'Chest,Triceps,Shoulders'},
+      // Pull
+      'Deadlift': {'muscleGroup': 'Back,Hamstrings,Glutes'},
+      'Pull-ups': {'muscleGroup': 'Back,Biceps'},
+      'Barbell Row': {'muscleGroup': 'Back,Biceps'},
+      'Lat Pulldown': {'muscleGroup': 'Back,Biceps'},
+      'Bicep Curls': {'muscleGroup': 'Biceps,Forearms'},
+      'Face Pulls': {'muscleGroup': 'Shoulders,Back'},
+      // Legs
+      'Squat': {'muscleGroup': 'Quads,Glutes,Hamstrings'},
+      'Leg Press': {'muscleGroup': 'Quads,Glutes'},
+      'Romanian Deadlift': {'muscleGroup': 'Hamstrings,Glutes,Back'},
+      'Leg Curl': {'muscleGroup': 'Hamstrings'},
+      'Leg Extension': {'muscleGroup': 'Quads'},
+      'Calf Raises': {'muscleGroup': 'Calves'},
+      // Cardio - LISS
+      'Running': {'cardioType': 'LISS'},
+      'Cycling': {'cardioType': 'LISS'},
+      'Swimming': {'cardioType': 'LISS'},
+      'Walking': {'cardioType': 'LISS'},
+      'Rowing': {'cardioType': 'LISS'},
+      // Cardio - HIIT  
+      'Jump Rope': {'cardioType': 'HIIT'},
+      'Sprints': {'cardioType': 'HIIT'},
+      'Burpees': {'cardioType': 'HIIT'},
+      'Mountain Climbers': {'cardioType': 'HIIT'},
+    };
+
+    for (final entry in updates.entries) {
+      final name = entry.key;
+      final data = entry.value;
+      
+      await (update(exercises)..where((e) => e.name.equals(name))).write(
+        ExercisesCompanion(
+          muscleGroup: data.containsKey('muscleGroup') 
+              ? Value(data['muscleGroup']) 
+              : const Value.absent(),
+          cardioType: data.containsKey('cardioType') 
+              ? Value(data['cardioType']) 
+              : const Value.absent(),
+        ),
+      );
+    }
   }
 
   Future<void> _seedInitialData() async {
@@ -167,32 +334,38 @@ class AppDatabase extends _$AppDatabase {
   Future<void> _seedExercises() async {
     final exercises = [
       // Push
-      ExercisesCompanion.insert(name: 'Bench Press', category: 'Push', muscleGroup: const Value('Chest')),
-      ExercisesCompanion.insert(name: 'Incline Bench Press', category: 'Push', muscleGroup: const Value('Upper Chest')),
-      ExercisesCompanion.insert(name: 'Overhead Press', category: 'Push', muscleGroup: const Value('Shoulders')),
-      ExercisesCompanion.insert(name: 'Dumbbell Shoulder Press', category: 'Push', muscleGroup: const Value('Shoulders')),
+      ExercisesCompanion.insert(name: 'Bench Press', category: 'Push', muscleGroup: const Value('Chest,Triceps,Shoulders')),
+      ExercisesCompanion.insert(name: 'Incline Bench Press', category: 'Push', muscleGroup: const Value('Chest,Shoulders,Triceps')),
+      ExercisesCompanion.insert(name: 'Overhead Press', category: 'Push', muscleGroup: const Value('Shoulders,Triceps')),
+      ExercisesCompanion.insert(name: 'Dumbbell Shoulder Press', category: 'Push', muscleGroup: const Value('Shoulders,Triceps')),
       ExercisesCompanion.insert(name: 'Tricep Pushdown', category: 'Push', muscleGroup: const Value('Triceps')),
-      ExercisesCompanion.insert(name: 'Dips', category: 'Push', muscleGroup: const Value('Chest/Triceps')),
+      ExercisesCompanion.insert(name: 'Dips', category: 'Push', muscleGroup: const Value('Chest,Triceps,Shoulders')),
       // Pull
-      ExercisesCompanion.insert(name: 'Deadlift', category: 'Pull', muscleGroup: const Value('Back/Hamstrings')),
-      ExercisesCompanion.insert(name: 'Pull-ups', category: 'Pull', muscleGroup: const Value('Back')),
-      ExercisesCompanion.insert(name: 'Barbell Row', category: 'Pull', muscleGroup: const Value('Back')),
-      ExercisesCompanion.insert(name: 'Lat Pulldown', category: 'Pull', muscleGroup: const Value('Lats')),
-      ExercisesCompanion.insert(name: 'Bicep Curls', category: 'Pull', muscleGroup: const Value('Biceps')),
-      ExercisesCompanion.insert(name: 'Face Pulls', category: 'Pull', muscleGroup: const Value('Rear Delts')),
+      ExercisesCompanion.insert(name: 'Deadlift', category: 'Pull', muscleGroup: const Value('Back,Hamstrings,Glutes')),
+      ExercisesCompanion.insert(name: 'Pull-ups', category: 'Pull', muscleGroup: const Value('Back,Biceps')),
+      ExercisesCompanion.insert(name: 'Barbell Row', category: 'Pull', muscleGroup: const Value('Back,Biceps')),
+      ExercisesCompanion.insert(name: 'Lat Pulldown', category: 'Pull', muscleGroup: const Value('Back,Biceps')),
+      ExercisesCompanion.insert(name: 'Bicep Curls', category: 'Pull', muscleGroup: const Value('Biceps,Forearms')),
+      ExercisesCompanion.insert(name: 'Face Pulls', category: 'Pull', muscleGroup: const Value('Shoulders,Back')),
       // Legs
-      ExercisesCompanion.insert(name: 'Squat', category: 'Legs', muscleGroup: const Value('Quads/Glutes')),
-      ExercisesCompanion.insert(name: 'Leg Press', category: 'Legs', muscleGroup: const Value('Quads')),
-      ExercisesCompanion.insert(name: 'Romanian Deadlift', category: 'Legs', muscleGroup: const Value('Hamstrings')),
+      ExercisesCompanion.insert(name: 'Squat', category: 'Legs', muscleGroup: const Value('Quads,Glutes,Hamstrings')),
+      ExercisesCompanion.insert(name: 'Leg Press', category: 'Legs', muscleGroup: const Value('Quads,Glutes')),
+      ExercisesCompanion.insert(name: 'Romanian Deadlift', category: 'Legs', muscleGroup: const Value('Hamstrings,Glutes,Back')),
       ExercisesCompanion.insert(name: 'Leg Curl', category: 'Legs', muscleGroup: const Value('Hamstrings')),
       ExercisesCompanion.insert(name: 'Leg Extension', category: 'Legs', muscleGroup: const Value('Quads')),
       ExercisesCompanion.insert(name: 'Calf Raises', category: 'Legs', muscleGroup: const Value('Calves')),
-      // Cardio
-      ExercisesCompanion.insert(name: 'Running', category: 'Cardio', isCardio: const Value(true)),
-      ExercisesCompanion.insert(name: 'Cycling', category: 'Cardio', isCardio: const Value(true)),
-      ExercisesCompanion.insert(name: 'Swimming', category: 'Cardio', isCardio: const Value(true)),
-      ExercisesCompanion.insert(name: 'Jump Rope', category: 'Cardio', isCardio: const Value(true)),
-      ExercisesCompanion.insert(name: 'Rowing', category: 'Cardio', isCardio: const Value(true)),
+      // Cardio - LISS
+      ExercisesCompanion.insert(name: 'Running', category: 'Cardio', isCardio: const Value(true), cardioType: const Value('LISS')),
+      ExercisesCompanion.insert(name: 'Cycling', category: 'Cardio', isCardio: const Value(true), cardioType: const Value('LISS')),
+      ExercisesCompanion.insert(name: 'Swimming', category: 'Cardio', isCardio: const Value(true), cardioType: const Value('LISS')),
+      ExercisesCompanion.insert(name: 'Walking', category: 'Cardio', isCardio: const Value(true), cardioType: const Value('LISS')),
+      // Cardio - HIIT
+      ExercisesCompanion.insert(name: 'Jump Rope', category: 'Cardio', isCardio: const Value(true), cardioType: const Value('HIIT')),
+      ExercisesCompanion.insert(name: 'Sprints', category: 'Cardio', isCardio: const Value(true), cardioType: const Value('HIIT')),
+      ExercisesCompanion.insert(name: 'Burpees', category: 'Cardio', isCardio: const Value(true), cardioType: const Value('HIIT')),
+      ExercisesCompanion.insert(name: 'Mountain Climbers', category: 'Cardio', isCardio: const Value(true), cardioType: const Value('HIIT')),
+      ExercisesCompanion.insert(name: 'Rowing', category: 'Cardio', isCardio: const Value(true), cardioType: const Value('HIIT'))
+
     ];
     await batch((batch) => batch.insertAll(this.exercises, exercises));
   }

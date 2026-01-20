@@ -122,14 +122,12 @@ class _ExercisePickerState extends ConsumerState<ExercisePicker> {
                     _filterExercises();
                   },
                   backgroundColor: AppTheme.surfaceLight,
-                  selectedColor: AppTheme.primary.withOpacity(0.3),
+                  selectedColor: AppTheme.primary.withValues(alpha: 0.3),
                   labelStyle: TextStyle(
                     color: isSelected ? AppTheme.primary : AppTheme.textSecondary,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
-                  side: BorderSide(
-                    color: isSelected ? AppTheme.primary : Colors.transparent,
-                  ),
+                  side: BorderSide.none,
                 ),
               );
             }).toList(),
@@ -180,7 +178,7 @@ class _ExercisePickerState extends ConsumerState<ExercisePicker> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
+          color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, color: color, size: 20),
@@ -199,8 +197,11 @@ class _ExercisePickerState extends ConsumerState<ExercisePicker> {
 
   Future<void> _showCreateExerciseDialog() async {
     final nameController = TextEditingController(text: _searchController.text);
-    final muscleGroupController = TextEditingController();
     String selectedCategory = 'Push';
+    String? selectedCardioType;
+    List<String> selectedMuscles = [];
+    
+    const allMuscles = ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps', 'Abs', 'Quads', 'Hamstrings', 'Glutes', 'Calves', 'Forearms', 'Full Body'];
 
     await showDialog(
       context: context,
@@ -208,35 +209,73 @@ class _ExercisePickerState extends ConsumerState<ExercisePicker> {
         builder: (context, setState) => AlertDialog(
           backgroundColor: AppTheme.surface,
           title: const Text('Create Custom Exercise'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Exercise Name',
-                  hintText: 'e.g. Diamond Pushups',
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Exercise Name',
+                    hintText: 'e.g. Diamond Pushups',
+                  ),
+                  autofocus: true,
                 ),
-                autofocus: true,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: selectedCategory,
-                decoration: const InputDecoration(labelText: 'Category'),
-                items: ['Push', 'Pull', 'Legs', 'Cardio']
-                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                    .toList(),
-                onChanged: (v) => setState(() => selectedCategory = v!),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: muscleGroupController,
-                decoration: const InputDecoration(
-                  labelText: 'Muscle Group (Optional)',
-                  hintText: 'e.g. Triceps',
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: selectedCategory,
+                  decoration: const InputDecoration(labelText: 'Category'),
+                  items: ['Push', 'Pull', 'Legs', 'Cardio']
+                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                      .toList(),
+                  onChanged: (v) => setState(() {
+                    selectedCategory = v!;
+                    if (v != 'Cardio') selectedCardioType = null;
+                  }),
                 ),
-              ),
-            ],
+                
+                // LISS/HIIT for Cardio
+                if (selectedCategory == 'Cardio') ...[
+                  const SizedBox(height: 16),
+                  Text('Cardio Type', style: Theme.of(context).textTheme.labelMedium),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: ['LISS', 'HIIT'].map((type) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(type),
+                        selected: selectedCardioType == type,
+                        onSelected: (sel) => setState(() => selectedCardioType = sel ? type : null),
+                        selectedColor: AppTheme.exerciseColor.withValues(alpha: 0.3),
+                      ),
+                    )).toList(),
+                  ),
+                ],
+                
+                // Muscle Groups (multi-select)
+                const SizedBox(height: 16),
+                Text('Muscle Groups', style: Theme.of(context).textTheme.labelMedium),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: allMuscles.map((muscle) => FilterChip(
+                    label: Text(muscle, style: const TextStyle(fontSize: 12)),
+                    selected: selectedMuscles.contains(muscle),
+                    onSelected: (sel) => setState(() {
+                      if (sel) {
+                        selectedMuscles.add(muscle);
+                      } else {
+                        selectedMuscles.remove(muscle);
+                      }
+                    }),
+                    selectedColor: AppTheme.primary.withValues(alpha: 0.3),
+                    visualDensity: VisualDensity.compact,
+                  )).toList(),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -252,9 +291,9 @@ class _ExercisePickerState extends ConsumerState<ExercisePicker> {
                   ExercisesCompanion.insert(
                     name: nameController.text.trim(),
                     category: selectedCategory,
-                    muscleGroup: Value(muscleGroupController.text.trim().isEmpty 
-                        ? null 
-                        : muscleGroupController.text.trim()),
+                    muscleGroup: Value(selectedMuscles.isEmpty ? null : selectedMuscles.join(',')),
+                    isCardio: Value(selectedCategory == 'Cardio'),
+                    cardioType: Value(selectedCardioType),
                   ),
                 );
                 
@@ -262,9 +301,6 @@ class _ExercisePickerState extends ConsumerState<ExercisePicker> {
                   Navigator.pop(context);
                   _searchController.clear();
                   _loadExercises(); // Refresh list
-                  
-                  // Optional: Select the newly created exercise immediately
-                  // For now, refreshing the list is sufficient.
                 }
               },
               style: ElevatedButton.styleFrom(

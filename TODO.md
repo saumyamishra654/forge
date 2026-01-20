@@ -1,43 +1,82 @@
-# TODO - Future Ideas
+# TODO - Feature Backlog
 
-## High Priority
-- [ ] Firebase/Supabase cloud sync
-- [ ] Body tracking (weight, body fat) - IN PROGRESS
-- [ ] Barcode scanner implementation
+> Last updated: 2026-01-20
+
+---
+
+## ✅ Recently Completed
+
+- [x] Body tracking (weight, body fat) with trends
+- [x] Multi-muscle exercise selection (comma-separated)
+- [x] LISS/HIIT cardio classification
+- [x] Workout type auto-detection (Push/Pull/Legs/Upper/Full Body)
+- [x] Edit food logs (tap to edit servings, meal type, delete)
+- [x] Edit exercise logs
+- [x] Manual workout duration input
+- [x] Backdate workouts (log past dates)
+- [x] Dynamic home screen insights (₹/protein, ₹/calorie)
+- [x] Dark brown premium theme
+
+---
+
+## 🔴 High Priority
+
+- [ ] **Firebase cloud sync** - Offline-first with Firestore
+  - Schema prep: add `remoteId`, `syncStatus`, `createdAt`, `updatedAt`
+  - Anonymous auth → upgrade to Google/Email
+  - Sync queue for pending changes
+- [ ] Barcode scanner implementation (google_mlkit ready)
 - [ ] OCR nutrition label parser
-- [ ] Complete nutrition module UI
+- [ ] Food quick-add from history (recent foods)
 
-## Medium Priority
-- [ ] Goal setting (weight goals, calorie targets, protein targets)
+---
+
+## 🟡 Medium Priority
+
+- [ ] Goal setting (weight targets, calorie targets, protein targets)
 - [ ] Weekly/monthly progress reports
 - [ ] Recipe builder with auto macro calculation
-- [ ] Food quick-add from history
-- [ ] Workout templates/routines
+- [ ] Workout templates/routines (save & reuse)
+- [ ] Exercise search/filter in picker
+- [ ] Supplement reminders (notifications)
 
-## Low Priority / Nice to Have
+---
+
+## 🟢 Low Priority / Nice to Have
+
 - [ ] Apple Health / Google Fit integration
 - [ ] Home screen widgets (iOS/Android)
 - [ ] Data export (CSV, JSON)
-- [ ] Dark/Light theme toggle
-- [ ] Notification reminders
+- [ ] Light/Dark theme toggle
 - [ ] Progress photos
 - [ ] Social sharing / accountability partners
 
-## Cross-Domain Insights Ideas
-- [ ] Best value protein sources ranking
+---
+
+## 💡 Cross-Domain Insights Ideas
+
+- [ ] Best value protein sources ranking (₹/g protein by food)
 - [ ] Monthly cost per macro breakdown
 - [ ] Correlation: spending vs calorie intake
-- [ ] Gym ROI calculator (₹/workout)
-- [ ] "What if" simulator (if I ate X less, I'd save Y per month)
+- [ ] Gym ROI calculator (₹ per workout)
+- [ ] "What if" simulator (reduce X, save Y per month)
+- [ ] Weekly spending by meal type
 
-## Technical Debt
+---
+
+## 🔧 Technical Debt
+
 - [ ] Add unit tests for repositories
 - [ ] Add integration tests for main flows
 - [ ] Optimize database queries with indexes
 - [ ] Add proper error handling & loading states
-- [ ] Implement proper form validation
+- [ ] Implement form validation
+- [ ] Refactor to proper repository pattern
 
-## Community Features (V2+)
+---
+
+## 🌐 Community Features (V2+)
+
 - [ ] Shared food database (verified user contributions)
 - [ ] Exercise database contributions
 - [ ] Community workout templates

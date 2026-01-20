@@ -1,22 +1,24 @@
 # Forge - LLM Reference Document
 
 > **Purpose**: Single source of truth for AI assistants working on this codebase.
+> **Last updated**: 2026-01-20
 
 ## Quick Links
 - [Project Structure](#project-structure)
 - [Database Schema](#database-schema)
 - [Screens & Navigation](#screens--navigation)
+- [Recent Features](#recent-features)
 - [Architectural Considerations](#architectural-considerations-for-future-changes)
 
 ---
 
 ## Tech Stack
-- **Framework**: Flutter 3.x (iOS, Android, Web)
+- **Framework**: Flutter 3.x (iOS, Android, macOS, Web)
 - **State Management**: Riverpod
 - **Database**: Drift (SQLite) with code generation
 - **Charts**: fl_chart
-- **Barcode/OCR**: google_mlkit_barcode_scanning, google_mlkit_text_recognition
-- **Food APIs**: OpenFoodFacts, USDA FoodData Central
+- **Animations**: flutter_animate
+- **Theme**: Premium dark brown aesthetic
 
 ---
 
@@ -25,35 +27,39 @@
 ```
 forge/
 ├── lib/
-│   ├── main.dart                    # App entry, MainNavigationScreen
+│   ├── main.dart                    # App entry, MainNavigationScreen, HomeScreen
 │   ├── core/
 │   │   ├── database/
 │   │   │   ├── database.dart        # Drift schema & seed data
-│   │   │   └── database.g.dart      # Generated
+│   │   │   ├── database.g.dart      # Generated
+│   │   │   └── connection/          # Platform-specific DB connections
 │   │   ├── theme/
-│   │   │   └── app_theme.dart       # Premium dark theme
-│   │   ├── widgets/                 # Shared widgets
-│   │   └── utils/                   # Helpers, formatters
+│   │   │   └── app_theme.dart       # Dark brown theme with warm accents
+│   │   └── widgets/                 # Shared widgets
 │   └── features/
 │       ├── exercise/
-│       │   ├── presentation/screens/exercise_home_screen.dart
-│       │   ├── presentation/screens/workout_session_screen.dart
-│       │   └── presentation/widgets/{exercise_picker, set_logger}.dart
+│       │   ├── presentation/screens/
+│       │   │   ├── exercise_home_screen.dart   # History, stats, body part volume
+│       │   │   ├── workout_session_screen.dart # Active workout logging
+│       │   │   └── exercise_history_screen.dart
+│       │   └── presentation/widgets/
+│       │       ├── exercise_picker.dart        # Multi-muscle selection
+│       │       ├── set_logger.dart
+│       │       └── edit_exercise_log_dialog.dart
 │       ├── nutrition/
-│       │   └── presentation/screens/nutrition_home_screen.dart
-│       ├── food_database/           # Barcode scanner, OCR, API sources
+│       │   ├── presentation/screens/
+│       │   │   ├── nutrition_home_screen.dart  # Macro chart, food list
+│       │   │   └── manual_food_log_screen.dart # Manual food entry
+│       │   └── presentation/widgets/
+│       │       ├── supplement_alcohol_sheets.dart
+│       │       └── edit_food_log_dialog.dart   # Edit existing food logs
 │       ├── finance/
 │       │   └── presentation/screens/finance_home_screen.dart
-│       ├── insights/
-│       │   └── presentation/screens/insights_home_screen.dart
-│       └── body/                    # Weight & body fat tracking
+│       └── body/
 │           └── presentation/screens/body_tracking_screen.dart
-├── assets/
-│   ├── icons/
-│   └── foods/                       # Seeded food images
 ├── LLM_REFERENCE.md                 # This file
-├── CHANGELOG.md
-└── TODO.md
+├── TODO.md                          # Feature backlog
+└── CHANGELOG.md
 ```
 
 ---
@@ -61,188 +67,143 @@ forge/
 ## Database Schema
 
 ### Exercise Tables
-| Table | Columns | Purpose |
-|-------|---------|---------|
-| `exercises` | id, name, category, muscleGroup, isCardio | Exercise definitions |
-| `exercise_logs` | id, logDate, exerciseId, sets, reps, weight, durationMinutes, distanceKm, notes | Workout log entries |
+| Table | Key Columns | Notes |
+|-------|-------------|-------|
+| `exercises` | id, name, category, muscleGroup, isCardio, **cardioType** | muscleGroup is comma-separated for multi-muscle exercises. cardioType: LISS/HIIT |
+| `exercise_logs` | id, logDate, exerciseId, sets, reps, weight, durationMinutes, distanceKm, notes | Cardio uses durationMinutes & distanceKm |
 
 ### Nutrition Tables
-| Table | Columns | Purpose |
-|-------|---------|---------|
-| `foods` | id, name, barcode, calories, protein, carbs, fat, fiber, sugar, servingSize, servingUnit, source, imageUrl, verified, createdBy | Food database (seed + user contributed) |
-| `food_logs` | id, logDate, foodId, servings, mealType | Daily food intake |
-| `supplements` | id, name, type, dosageUnit | Supplement definitions |
-| `supplement_logs` | id, logDate, supplementId, dosage | Supplement intake log |
-| `alcohol_logs` | id, logDate, drinkType, units, calories, volumeMl | Alcohol consumption |
+| Table | Key Columns | Notes |
+|-------|-------------|-------|
+| `foods` | id, name, barcode, calories, protein, carbs, fat, servingSize, source | source: custom, openfoodfacts, usda |
+| `food_logs` | id, logDate, foodId, servings, mealType | mealType: Breakfast/Lunch/Dinner/Snack |
+| `supplements` | id, name, type, dosageUnit | |
+| `supplement_logs` | id, logDate, supplementId, dosage | |
+| `alcohol_logs` | id, logDate, drinkType, units, calories | |
 
 ### Finance Tables
-| Table | Columns | Purpose |
-|-------|---------|---------|
-| `expense_categories` | id, name, icon, color, isFoodRelated | Categories with food flag for cross-domain |
-| `expenses` | id, logDate, categoryId, amount, description, linkedFoodLogId | Expense entries with optional food link |
+| Table | Key Columns | Notes |
+|-------|-------------|-------|
+| `expense_categories` | id, name, icon, color, isFoodRelated | isFoodRelated for cross-domain insights |
+| `expenses` | id, logDate, categoryId, amount, description | |
 
-### Body Tracking Tables (NEW)
-| Table | Columns | Purpose |
-|-------|---------|---------|
-| `weight_logs` | id, logDate, weightKg, notes | Daily weight tracking |
-| `body_fat_logs` | id, logDate, bodyFatPercent, method, notes | Body fat measurements |
-
-### Cross-Domain Relationships
-- `expenses.linkedFoodLogId` → `food_logs.id` (optional link for ₹/calorie calculation)
-- `expense_categories.isFoodRelated` → flags categories for nutrition-finance insights
+### Body Tracking Tables
+| Table | Key Columns | Notes |
+|-------|-------------|-------|
+| `weight_logs` | id, logDate, weightKg, notes | |
+| `body_fat_logs` | id, logDate, bodyFatPercent, method | method: scale, caliper, dexa, estimate |
 
 ---
 
 ## Screens & Navigation
 
-### Bottom Navigation Tabs
-1. **Home** (`HomeScreen`)
-   - Today's summary (calories, protein, spend)
-   - Quick action buttons
-   - Insight of the day card
+### Bottom Navigation (4 tabs)
+1. **Home** - Today's summary, quick actions, dynamic insights
+2. **Exercise** - Weekly stats, workout history, body part volume
+3. **Nutrition** - Macro chart, food logs, supplements
+4. **Finance** - Spending breakdown, expense list
 
-2. **Exercise** (`ExerciseHomeScreen`)
-   - Weekly volume stats (workouts, sets, tonnage)
-   - Body part volume breakdown
-   - Workout history grouped by day
-   - Auto-detected workout type (Push/Pull/Legs/Full Body)
-   - Start Workout → opens `WorkoutSessionScreen`
-
-2a. **Workout Session** (`WorkoutSessionScreen`)
-   - Real-time stats: duration, exercise count, sets, volume
-   - Manual calorie input
-   - Add/edit/delete exercises during session
-   - Discard confirmation dialog
-   - Finish saves all logs to database
-
-3. **Nutrition** (`NutritionHomeScreen`)
-   - Macro ring chart (P/C/F)
-   - Daily/weekly averages
-   - Food log list
-   - Barcode scanner integration
-
-4. **Finance** (`FinanceHomeScreen`)
-   - Category pie chart
-   - Daily expense list
-   - Expense trends
-
-### Modal Sheets
-- `AddExerciseSheet` - Exercise picker with category filter, last weight auto-fill
-- `AddFoodSheet` - Text search + barcode scanner
-- `AddExpenseSheet` - Category picker with loading state, amount input
-- `BarcodeScannerScreen` - Full screen camera for scanning
-- `SupplementLogSheet` - Select from database supplements
-- `AlcoholLogSheet` - Drink type presets with calorie estimation
+### Key Flows
+- **Log Workout**: Home → Start Workout → Add Exercises → Finish
+- **Log Food**: Home/Nutrition → Manual Food Log → Save
+- **Edit Food Log**: Nutrition → Tap food item → Edit Dialog
+- **Edit Exercise Log**: Exercise History → Tap log → Edit Dialog
+- **Backdate Workout**: Exercise → Start → "Log Past Workout" → Pick Date
 
 ---
 
-## Key Features Implementation
+## Recent Features (2026-01-20)
 
-### Auto-fill Last Weight
-```dart
-// In ExercisePicker._getLastWeight()
-final logs = await (db.select(db.exerciseLogs)
-  ..where((t) => t.exerciseId.equals(exerciseId))
-  ..orderBy([(t) => OrderingTerm.desc(t.logDate)])
-  ..limit(1))
-  .get();
-```
+### ✅ Multi-Muscle Exercise Selection
+- Exercises can now have multiple muscle groups (comma-separated in `muscleGroup`)
+- UI uses `FilterChip` widgets for multi-selection
+- Volume is distributed evenly across selected muscles in breakdown
 
-### Cross-Domain Metrics
-```dart
-// ₹/Calorie = Food expenses ÷ Total calories
-// ₹/Protein = Food expenses ÷ Total protein (g)
-// Gym ROI = Fitness expenses ÷ Workout count
-```
+### ✅ Cardio Types (LISS/HIIT)
+- New `cardioType` column on `exercises` table
+- `ChoiceChip` selection when creating cardio exercises
 
-### Food Source Fallback Chain
-1. Local DB (barcode lookup)
-2. OpenFoodFacts API
-3. USDA FoodData Central
-4. User contribution (OCR from label photo)
+### ✅ Workout Type Detection
+- Automatically detects: Push, Pull, Legs, Upper, Full Body, Mixed
+- Logic: Push+Pull = Upper, Push+Pull+Legs = Full Body
+
+### ✅ Edit Food Logs
+- Tap any food item in nutrition screen to edit
+- Change servings, meal type, or delete
+- Live macro preview in dialog
+
+### ✅ Dynamic Home Insights
+- Shows calculated metrics based on logged data:
+  - ₹ per gram of protein
+  - ₹ per 100 calories
+  - Calories per gram of protein
+
+### ✅ Manual Workout Timer
+- Duration is manually entered in minutes (not auto-calculated)
+- Better for logging past workouts
 
 ---
 
 ## Architectural Considerations for Future Changes
 
-### 🔴 Firebase/Cloud Sync (HIGH PRIORITY)
-**Prepare now:**
-- All tables have local `id` as primary key
-- Add `syncStatus` enum (local, syncing, synced) column when ready
-- Add `remoteId` nullable column for Firebase document IDs
-- Store `createdAt` and `updatedAt` timestamps on all logs
+### 🔴 Firebase/Cloud Sync (NEXT PRIORITY)
 
-**Migration path:**
+**Current compatibility: ✅ Good**
+- Drift/SQLite already handles offline storage
+- All tables have `id` as primary key
+
+**Required schema additions:**
 ```dart
-// Future: Add to all log tables
 TextColumn get remoteId => text().nullable()();
-IntColumn get syncStatus => intEnum<SyncStatus>().withDefault(const Constant(0))();
+IntColumn get syncStatus => integer().withDefault(const Constant(0))();
 DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
 ```
 
+**Sync architecture planned:**
+- Write locally first (UI never waits for network)
+- Queue changes in `SyncQueue` table
+- Push when online, pull on app start
+- Last-write-wins conflict resolution
+
 ### 🟡 Multi-User Support
-**Prepare now:**
-- All log tables should have nullable `userId` column
-- Foods contributed by users need `createdBy` (already exists)
+- Add nullable `userId` column to all log tables
+- Foods already have `createdBy`
 
-### 🟡 Data Export
-**Prepare now:**
-- Centralized repository pattern for each feature
-- Clean separation of data models from UI
-
-### 🟢 Goal Setting & Reminders
-**Prepare now:**
-- No special preparation needed
-- Can add `goals` table later with target dates
-
-### 🟢 Apple Health / Google Fit
-**Prepare now:**
-- Keep exercise_logs and weight_logs structure compatible
-- Standard units (kg for weight, km for distance)
+### 🟢 Health App Integration
+- Schema already uses standard units (kg, km)
+- Compatible with Apple Health / Google Fit
 
 ---
 
 ## Code Conventions
 
-### File Naming
-- Screens: `*_screen.dart` in `presentation/screens/`
-- Widgets: snake_case in `presentation/widgets/`
-- Models: singular noun in `data/models/`
-- Repositories: `*_repository.dart` in `data/repositories/`
+### Database Regeneration
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+### Theme Colors
+```dart
+AppTheme.primary          // Warm brown
+AppTheme.exerciseColor    // Green
+AppTheme.nutritionColor   // Orange
+AppTheme.financeColor     // Blue
+AppTheme.insightsColor    // Purple
+AppTheme.proteinColor, .carbsColor, .fatColor
+```
 
 ### State Management
-- Use `ConsumerWidget` / `ConsumerStatefulWidget` for Riverpod
-- Providers in `providers/` folder per feature
-- Database provider in `main.dart`: `databaseProvider`
-
-### Theme Usage
-```dart
-// Colors
-AppTheme.primary, AppTheme.exerciseColor, AppTheme.nutritionColor, etc.
-
-// Gradients
-AppTheme.primaryGradient, AppTheme.exerciseGradient, etc.
-
-// Background colors
-AppTheme.background, AppTheme.surface, AppTheme.card
-```
+- Use `ConsumerWidget` / `ConsumerStatefulWidget`
+- Database via `ref.read(databaseProvider)`
 
 ---
 
 ## Running the App
 
 ```bash
-# Install dependencies
 flutter pub get
-
-# Generate Drift code
 dart run build_runner build --delete-conflicting-outputs
-
-# Run on device/emulator
-flutter run
+flutter run -d macos  # or ios, android, chrome
 ```
-
----
-
-*Last updated: 2026-01-19*

@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:drift/drift.dart' hide Column;
+import '../../../../main.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../food_database/presentation/screens/food_search_screen.dart';
+import '../../../../core/database/database.dart';
+import 'manual_food_log_screen.dart';
+
 import '../widgets/supplement_alcohol_sheets.dart';
+import '../widgets/edit_food_log_dialog.dart';
 
 class NutritionHomeScreen extends ConsumerStatefulWidget {
   const NutritionHomeScreen({super.key});
@@ -21,6 +26,67 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
   double _totalProtein = 0;
   double _totalCarbs = 0;
   double _totalFat = 0;
+
+  bool _isLoading = true;
+  List<TypedResult> _dailyLogs = [];
+  List<SupplementLogWithDetails> _supplementLogs = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDailyLogs();
+  }
+
+  Future<void> _loadDailyLogs() async {
+    setState(() => _isLoading = true);
+    final db = ref.read(databaseProvider);
+    final start = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+    final end = start.add(const Duration(days: 1));
+    
+    final query = db.select(db.foodLogs).join([
+      innerJoin(db.foods, db.foods.id.equalsExp(db.foodLogs.foodId)),
+    ])
+      ..where(db.foodLogs.logDate.isBetweenValues(start, end));
+      
+    final results = await query.get();
+    
+    double cal = 0, prot = 0, carb = 0, fat = 0;
+    
+    for (var row in results) {
+      final log = row.readTable(db.foodLogs);
+      final food = row.readTable(db.foods);
+      final ratio = log.servings;
+      
+      cal += food.calories * ratio;
+      prot += food.protein * ratio;
+      carb += food.carbs * ratio;
+      fat += food.fat * ratio;
+    }
+    
+    // Load Supplement Logs
+    final suppQuery = db.select(db.supplementLogs).join([
+      innerJoin(db.supplements, db.supplements.id.equalsExp(db.supplementLogs.supplementId)),
+    ])
+      ..where(db.supplementLogs.logDate.isBetweenValues(start, end));
+    
+    final suppResults = await suppQuery.get();
+    final suppList = suppResults.map((row) => SupplementLogWithDetails(
+      log: row.readTable(db.supplementLogs),
+      supplement: row.readTable(db.supplements),
+    )).toList();
+    
+    if (mounted) {
+      setState(() {
+        _dailyLogs = results;
+        _supplementLogs = suppList;
+        _totalCalories = cal;
+        _totalProtein = prot;
+        _totalCarbs = carb;
+        _totalFat = fat;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -200,17 +266,148 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
             const SizedBox(height: 24),
             
             // Today's Log
-            Text(
-              'Today\'s Log',
-              style: Theme.of(context).textTheme.titleMedium,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Today\'s Log',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                if (_dailyLogs.isNotEmpty)
+                   // Small summary text? Or nothing.
+                   const SizedBox.shrink(),
+              ],
             ).animate().fadeIn(delay: 250.ms),
             
             const SizedBox(height: 12),
             
-            _buildEmptyLogState(),
+            (_dailyLogs.isEmpty && _supplementLogs.isEmpty)
+                ? _buildEmptyLogState()
+                : Column(
+                    children: [
+                      if (_dailyLogs.isNotEmpty) _buildFoodList(),
+                      if (_supplementLogs.isNotEmpty) ...[                  
+                        const SizedBox(height: 16),
+                        _buildSupplementList(),
+                      ],
+                    ],
+                  ),
+            
+            const SizedBox(height: 40),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFoodList() {
+    final db = ref.read(databaseProvider);
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _dailyLogs.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final row = _dailyLogs[index];
+        final log = row.readTable(db.foodLogs);
+        final food = row.readTable(db.foods);
+        
+        return InkWell(
+          onTap: () => _editFoodLog(context, log, food),
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.card,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppTheme.nutritionColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.restaurant_menu_rounded, color: AppTheme.nutritionColor, size: 20),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      food.name,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${log.mealType} • ${food.calories.toInt()} kcal',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${food.protein.toStringAsFixed(1)}p',
+                    style: TextStyle(color: AppTheme.proteinColor, fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    '${food.carbs.toStringAsFixed(1)}c',
+                    style: TextStyle(color: AppTheme.carbsColor, fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    '${food.fat.toStringAsFixed(1)}f',
+                    style: TextStyle(color: AppTheme.fatColor, fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ).animate().fadeIn(delay: (300 + index * 50).ms),
+        );
+      },
+    );
+  }
+
+  Widget _buildSupplementList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Supplements', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textMuted)),
+        const SizedBox(height: 8),
+        ...List.generate(_supplementLogs.length, (index) {
+          final s = _supplementLogs[index];
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppTheme.card,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.medication_rounded, color: Colors.purple, size: 18),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(s.supplement.name, style: Theme.of(context).textTheme.titleSmall),
+                ),
+                Text('${s.log.dosage} ${s.supplement.dosageUnit}', style: Theme.of(context).textTheme.bodySmall),
+              ],
+            ),
+          ).animate().fadeIn(delay: (400 + index * 50).ms);
+        }),
+      ],
     );
   }
 
@@ -297,7 +494,7 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
             Icon(
               Icons.restaurant_menu_rounded,
               size: 48,
-              color: AppTheme.nutritionColor.withOpacity(0.5),
+              color: AppTheme.nutritionColor.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
@@ -306,7 +503,7 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Tap Add Food or scan a barcode to start',
+              'Tap Add Food to start',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
@@ -315,20 +512,25 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
     ).animate().fadeIn(delay: 300.ms, duration: 400.ms);
   }
 
-  void _showAddFoodSheet(BuildContext context) {
-    Navigator.push(
+  void _showAddFoodSheet(BuildContext context) async {
+    final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const FoodSearchScreen()),
+      MaterialPageRoute(builder: (_) => const ManualFoodLogScreen()),
     );
+    
+    if (result == true) {
+      _loadDailyLogs();
+    }
   }
 
-  void _showSupplementsSheet(BuildContext context) {
-    showModalBottomSheet(
+  void _showSupplementsSheet(BuildContext context) async {
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const SupplementLogSheet(),
     );
+    _loadDailyLogs(); // Refresh after closing
   }
 
   void _showAlcoholSheet(BuildContext context) {
@@ -341,10 +543,9 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
   }
 
   void _showBarcodeScannerPlaceholder(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const FoodSearchScreen()),
-    );
+    // Placeholder - user wanted manual flow strictly, maybe remove this or point to manual too?
+    // I will keep it for now as placeholder for future
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Barcode scanner coming soon')));
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -353,9 +554,18 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: AppTheme.lightTheme, // Force light theme for picker or match current
+          child: child!,
+        );
+      },
     );
     if (picked != null) {
+      if (picked.year == _selectedDate.year && picked.month == _selectedDate.month && picked.day == _selectedDate.day) return;
+      
       setState(() => _selectedDate = picked);
+      _loadDailyLogs();
     }
   }
 
@@ -370,4 +580,21 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
     }
     return '${date.day}/${date.month}/${date.year}';
   }
+
+  void _editFoodLog(BuildContext context, FoodLog log, Food food) async {
+    final result = await showDialog(
+      context: context,
+      builder: (context) => EditFoodLogDialog(log: log, food: food),
+    );
+    
+    if (result == true) {
+      _loadDailyLogs();
+    }
+  }
+}
+
+class SupplementLogWithDetails {
+  final SupplementLog log;
+  final Supplement supplement;
+  SupplementLogWithDetails({required this.log, required this.supplement});
 }

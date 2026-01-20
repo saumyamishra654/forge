@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart' show Value, innerJoin, OrderingTerm, OrderingMode;
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/database/database.dart';
 import '../../../../main.dart';
@@ -18,6 +18,79 @@ class _FinanceHomeScreenState extends ConsumerState<FinanceHomeScreen> {
   double _totalSpentToday = 0;
   double _totalSpentWeek = 0;
   double _totalSpentMonth = 0;
+
+
+  bool _isLoading = true;
+  List<CategoryData> _categoryData = [];
+  List<ExpenseWithCategory> _recentExpenses = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFinancialData();
+  }
+
+  Future<void> _loadFinancialData() async {
+    setState(() => _isLoading = true);
+    final db = ref.read(databaseProvider);
+    final now = DateTime.now();
+    
+    // Date Ranges
+    final startToday = DateTime(now.year, now.month, now.day);
+    final startWeek = now.subtract(const Duration(days: 7));
+    final startMonth = DateTime(now.year, now.month, 1);
+    
+    final expenses = await db.select(db.expenses).get();
+    
+    double today = 0;
+    double week = 0;
+    double month = 0;
+    Map<int, double> categoryMap = {};
+    
+    for (var e in expenses) {
+      if (e.logDate.isAfter(startToday)) today += e.amount;
+      if (e.logDate.isAfter(startWeek)) week += e.amount;
+      if (e.logDate.isAfter(startMonth)) month += e.amount;
+      
+      // Category Breakdown (using month data for chart or all time? Let's use Month)
+      if (e.logDate.isAfter(startMonth)) {
+        categoryMap[e.categoryId] = (categoryMap[e.categoryId] ?? 0) + e.amount;
+      }
+    }
+    
+    // Load Categories for Chart Labels
+    final categories = await db.select(db.expenseCategories).get();
+    List<CategoryData> chartData = [];
+    
+    categoryMap.forEach((id, amount) {
+      final cat = categories.firstWhere((c) => c.id == id, orElse: () => const ExpenseCategory(id: -1, name: 'Unknown', icon: '?', color: '0xFF000000', isFoodRelated: false));
+      chartData.add(CategoryData(cat.name, amount, Color(int.parse(cat.color ?? '0xFF000000'))));
+    });
+
+    // Load recent expenses for list
+    final recentQuery = db.select(db.expenses).join([
+      innerJoin(db.expenseCategories, db.expenseCategories.id.equalsExp(db.expenses.categoryId)),
+    ]);
+    recentQuery.orderBy([OrderingTerm(expression: db.expenses.logDate, mode: OrderingMode.desc)]);
+    recentQuery.limit(20);
+    
+    final recentResults = await recentQuery.get();
+    final recentList = recentResults.map((row) => ExpenseWithCategory(
+      expense: row.readTable(db.expenses),
+      category: row.readTable(db.expenseCategories),
+    )).toList();
+
+    if (mounted) {
+      setState(() {
+        _totalSpentToday = today;
+        _totalSpentWeek = week;
+        _totalSpentMonth = month;
+        _categoryData = chartData;
+        _recentExpenses = recentList;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,34 +158,36 @@ class _FinanceHomeScreenState extends ConsumerState<FinanceHomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Category Breakdown',
+                    'Monthly Breakdown',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
                     height: 180,
-                    child: PieChart(
+                    child: _categoryData.isEmpty 
+                      ? Center(child: Text('No entries this month', style: Theme.of(context).textTheme.bodySmall))
+                      : PieChart(
                       PieChartData(
                         sectionsSpace: 2,
                         centerSpaceRadius: 50,
-                        sections: [
-                          PieChartSectionData(
-                            value: 1,
-                            color: AppTheme.financeColor.withOpacity(0.3),
+                        sections: _categoryData.map((data) {
+                          return PieChartSectionData(
+                            value: data.amount,
+                            color: data.color,
                             radius: 25,
                             showTitle: false,
-                          ),
-                        ],
+                          );
+                        }).toList(),
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Center(
-                    child: Text(
-                      'No expenses logged yet',
-                      style: Theme.of(context).textTheme.bodySmall,
+                  if (_categoryData.isNotEmpty)
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: _categoryData.map((data) => _buildLegendItem(data)).toList(),
                     ),
-                  ),
                 ],
               ),
             ).animate().fadeIn(delay: 150.ms, duration: 400.ms),
@@ -143,10 +218,27 @@ class _FinanceHomeScreenState extends ConsumerState<FinanceHomeScreen> {
             
             const SizedBox(height: 12),
             
-            _buildEmptyExpensesState(),
+            _recentExpenses.isEmpty
+                ? _buildEmptyExpensesState()
+                : _buildExpenseList(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildLegendItem(CategoryData data) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(color: data.color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 6),
+        Text(data.name, style: Theme.of(context).textTheme.bodySmall),
+      ],
     );
   }
 
@@ -190,7 +282,7 @@ class _FinanceHomeScreenState extends ConsumerState<FinanceHomeScreen> {
             Icon(
               Icons.receipt_long_rounded,
               size: 48,
-              color: AppTheme.financeColor.withOpacity(0.5),
+              color: AppTheme.financeColor.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
@@ -208,13 +300,70 @@ class _FinanceHomeScreenState extends ConsumerState<FinanceHomeScreen> {
     ).animate().fadeIn(delay: 300.ms, duration: 400.ms);
   }
 
-  void _showAddExpenseSheet(BuildContext context) {
-    showModalBottomSheet(
+  void _showAddExpenseSheet(BuildContext context) async {
+    final result = await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const AddExpenseSheet(),
     );
+    
+    if (result == true) {
+      _loadFinancialData();
+    }
+  }
+
+  Widget _buildExpenseList() {
+    return Column(
+      children: _recentExpenses.map((e) => Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppTheme.card,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.financeColor.withValues(alpha:0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(e.category.icon, style: const TextStyle(fontSize: 18)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(e.category.name, style: Theme.of(context).textTheme.titleSmall),
+                  if (e.expense.description != null)
+                    Text(e.expense.description!, style: Theme.of(context).textTheme.bodySmall),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text('₹${e.expense.amount.toStringAsFixed(0)}', style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppTheme.financeColor)),
+                Text(_formatDate(e.expense.logDate), style: Theme.of(context).textTheme.bodySmall),
+              ],
+            ),
+          ],
+        ),
+      )).toList(),
+    ).animate().fadeIn(delay: 300.ms, duration: 400.ms);
+  }
+  
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    if (date.day == now.day && date.month == now.month && date.year == now.year) {
+      return 'Today';
+    } else if (date.day == now.day - 1 && date.month == now.month && date.year == now.year) {
+      return 'Yesterday';
+    }
+    return '${date.day}/${date.month}';
   }
 }
 
@@ -239,6 +388,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
     });
   }
   bool _isLoading = true;
+  DateTime _selectedDate = DateTime.now();
 
   Future<void> _loadCategories() async {
     final db = ref.read(databaseProvider);
@@ -344,6 +494,39 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       hintText: 'What was this for?',
                     ),
                   ),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // Date
+                  Text('Date', style: Theme.of(context).textTheme.labelMedium),
+                  const SizedBox(height: 8),
+                  InkWell(
+                    onTap: _pickDate,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppTheme.surfaceLight),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_today_rounded, size: 20, color: AppTheme.textSecondary),
+                          const SizedBox(width: 12),
+                          Text(
+                            _selectedDate.day == DateTime.now().day &&
+                                    _selectedDate.month == DateTime.now().month &&
+                                    _selectedDate.year == DateTime.now().year
+                                ? 'Today'
+                                : '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          const Spacer(),
+                          const Icon(Icons.edit_rounded, size: 16, color: AppTheme.textMuted),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -379,7 +562,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
     final db = ref.read(databaseProvider);
     await db.into(db.expenses).insert(
       ExpensesCompanion.insert(
-        logDate: DateTime.now(),
+        logDate: _selectedDate,
         categoryId: _selectedCategory!.id,
         amount: amount,
         description: Value(_descriptionController.text.isNotEmpty 
@@ -389,7 +572,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
     );
 
     if (mounted) {
-      Navigator.pop(context);
+      Navigator.pop(context, true);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Expense saved!')),
       );
@@ -402,4 +585,30 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
     _descriptionController.dispose();
     super.dispose();
   }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      builder: (context, child) => Theme(data: Theme.of(context), child: child!),
+    );
+    if (picked != null) {
+      setState(() => _selectedDate = picked);
+    }
+  }
+}
+
+class CategoryData {
+  final String name;
+  final double amount;
+  final Color color;
+  CategoryData(this.name, this.amount, this.color);
+}
+
+class ExpenseWithCategory {
+  final Expense expense;
+  final ExpenseCategory category;
+  ExpenseWithCategory({required this.expense, required this.category});
 }

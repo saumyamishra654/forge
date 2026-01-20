@@ -7,6 +7,7 @@ import '../../../../core/database/database.dart';
 import '../../../../main.dart';
 import '../widgets/exercise_picker.dart';
 import '../widgets/set_logger.dart';
+import '../../providers/exercise_providers.dart';
 
 /// Active workout session state
 class WorkoutSession {
@@ -41,7 +42,8 @@ class SessionExercise {
 }
 
 class WorkoutSessionScreen extends ConsumerStatefulWidget {
-  const WorkoutSessionScreen({super.key});
+  final DateTime? initialDate;
+  const WorkoutSessionScreen({super.key, this.initialDate});
 
   @override
   ConsumerState<WorkoutSessionScreen> createState() => _WorkoutSessionScreenState();
@@ -50,19 +52,37 @@ class WorkoutSessionScreen extends ConsumerStatefulWidget {
 class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   late WorkoutSession _session;
   final _caloriesController = TextEditingController();
+  final _durationController = TextEditingController(text: '30');
 
   @override
   void initState() {
     super.initState();
-    _session = WorkoutSession(startTime: DateTime.now(), exercises: []);
+    _session = WorkoutSession(
+      startTime: widget.initialDate ?? DateTime.now(), 
+      exercises: []
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isBackdated = widget.initialDate != null && 
+        widget.initialDate!.day != DateTime.now().day;
+        
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Workout'),
+        title: Column(
+          children: [
+            const Text('Workout'),
+            if (isBackdated)
+              Text(
+                _formatDate(widget.initialDate!),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppTheme.textMuted,
+                ),
+              ),
+          ],
+        ),
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.close),
@@ -154,9 +174,11 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildStatItem(
-                '$minutes:${seconds.toString().padLeft(2, '0')}',
-                'Duration',
+                _durationController.text.isEmpty ? '0' : _durationController.text,
+                'Minutes',
                 Icons.timer_outlined,
+                isEditable: true,
+                onTap: _editDuration,
               ),
               _buildStatDivider(),
               _buildStatItem(
@@ -222,17 +244,24 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     ).animate().fadeIn(duration: 400.ms);
   }
 
-  Widget _buildStatItem(String value, String label, IconData icon) {
-    return Column(
+  Widget _buildStatItem(String value, String label, IconData icon, {bool isEditable = false, VoidCallback? onTap}) {
+    final child = Column(
       children: [
         Icon(icon, color: Colors.white.withValues(alpha: 0.8), size: 20),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              value,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (isEditable)
+              const Icon(Icons.edit, size: 12, color: Colors.white54),
+          ],
         ),
         Text(
           label,
@@ -241,6 +270,39 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
           ),
         ),
       ],
+    );
+    
+    if (isEditable && onTap != null) {
+      return GestureDetector(onTap: onTap, child: child);
+    }
+    return child;
+  }
+
+  void _editDuration() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: const Text('Workout Duration'),
+        content: TextField(
+          controller: _durationController,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            labelText: 'Minutes',
+            suffixText: 'min',
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {});
+            },
+            child: const Text('Done'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -433,36 +495,64 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   }
 
   Future<void> _finishWorkout() async {
-    if (_session.exercises.isEmpty) return;
+    // 🚨 EMERGENCY BACKUP LOGGING 🚨
+    debugPrint('\n=== 🚨 WORKOUT DATA BACKUP 🚨 ===');
+    debugPrint('Date: ${_session.startTime}');
+    for (var e in _session.exercises) {
+      debugPrint('Exercise: ${e.exercise.name}');
+      for (var s in e.sets) {
+        debugPrint('  - ${s.weight}kg x ${s.reps} (${s.distance}km, ${s.time?.inMinutes}m)');
+      }
+    }
+    debugPrint('===================================\n');
 
-    final db = ref.read(databaseProvider);
+    debugPrint('🏋️ Finish pressed. Exercises: ${_session.exercises.length}');
+    if (_session.exercises.isEmpty) {
+      debugPrint('⚠️ No exercises to save');
+      return;
+    }
 
-    // Save all exercises
-    for (final sessionExercise in _session.exercises) {
-      for (final set in sessionExercise.sets) {
-        await db.into(db.exerciseLogs).insert(
-          ExerciseLogsCompanion.insert(
-            logDate: _session.startTime,
-            exerciseId: sessionExercise.exercise.id,
-            sets: Value(1),
-            reps: Value(set.reps),
-            weight: Value(set.weight),
-            durationMinutes: Value(set.time?.inMinutes),
-            distanceKm: Value(set.distance),
+    try {
+      final exerciseRepo = ref.read(exerciseRepositoryProvider);
+
+      // Save all exercises
+      for (final sessionExercise in _session.exercises) {
+        debugPrint('📝 Saving ${sessionExercise.exercise.name} with ${sessionExercise.sets.length} sets');
+        for (final set in sessionExercise.sets) {
+          await exerciseRepo.logSet(
+            ExerciseLogsCompanion.insert(
+              logDate: _session.startTime,
+              exerciseId: sessionExercise.exercise.id,
+              sets: Value(1),
+              reps: Value(set.reps),
+              weight: Value(set.weight),
+              durationMinutes: Value(set.time?.inMinutes),
+              distanceKm: Value(set.distance),
+            ),
+          );
+        }
+      }
+
+      debugPrint('✅ All saved! Closing...');
+      
+      if (mounted) {
+        Navigator.pop(context, true); // Return true to indicate workout saved
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Workout saved! ${_session.exerciseCount} exercises, ${_session.totalSets} sets, ${(_session.totalVolume / 1000).toStringAsFixed(1)}t volume',
+            ),
           ),
         );
       }
-    }
-
-    if (mounted) {
-      Navigator.pop(context, true); // Return true to indicate workout saved
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Workout saved! ${_session.exerciseCount} exercises, ${_session.totalSets} sets, ${(_session.totalVolume / 1000).toStringAsFixed(1)}t volume',
-          ),
-        ),
-      );
+    } catch (e, stack) {
+      debugPrint('❌ Error saving workout: $e');
+      debugPrint('Stack: $stack');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -470,6 +560,11 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   void dispose() {
     _caloriesController.dispose();
     super.dispose();
+  }
+
+  String _formatDate(DateTime date) {
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 }
 

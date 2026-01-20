@@ -1,19 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:drift/drift.dart' as drift;
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'core/theme/app_theme.dart';
 import 'core/database/database.dart';
+import 'core/sync/sync.dart';
+import 'firebase_options.dart';
 import 'features/exercise/presentation/screens/exercise_home_screen.dart';
+import 'features/exercise/presentation/screens/workout_session_screen.dart';
 import 'features/nutrition/presentation/screens/nutrition_home_screen.dart';
+import 'features/nutrition/presentation/screens/manual_food_log_screen.dart';
 import 'features/finance/presentation/screens/finance_home_screen.dart';
-import 'features/insights/presentation/screens/insights_home_screen.dart';
 import 'features/body/presentation/screens/body_tracking_screen.dart';
 
 // Database provider
 final databaseProvider = Provider<AppDatabase>((ref) => AppDatabase());
 
-void main() {
+// Auth service provider
+final authServiceProvider = Provider<AuthService>((ref) => AuthService());
+
+// Auth state provider
+final authStateProvider = StreamProvider<User?>((ref) {
+  final authService = ref.watch(authServiceProvider);
+  return authService.authStateChanges;
+});
+
+// Sync repository provider
+final syncRepositoryProvider = Provider<SyncRepository>((ref) => SyncRepository());
+
+// Connectivity service provider
+final connectivityServiceProvider = Provider<ConnectivityService>((ref) {
+  final service = ConnectivityService();
+  service.initialize();
+  ref.onDispose(() => service.dispose());
+  return service;
+});
+
+// Sync engine provider
+final syncEngineProvider = Provider<SyncEngine>((ref) {
+  final engine = SyncEngine(
+    database: ref.read(databaseProvider),
+    syncRepository: ref.read(syncRepositoryProvider),
+    connectivityService: ref.read(connectivityServiceProvider),
+  );
+  ref.onDispose(() => engine.dispose());
+  return engine;
+});
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    debugPrint('✅ Firebase initialized');
+  } catch (e) {
+    debugPrint('❌ Firebase init failed: $e');
+  }
+
   Animate.restartOnHotReload = true;
   runApp(const ProviderScope(child: ForgeApp()));
 }
@@ -26,7 +74,7 @@ class ForgeApp extends StatelessWidget {
     return MaterialApp(
       title: 'Forge',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
       home: const MainNavigationScreen(),
     );
   }
@@ -61,7 +109,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           color: AppTheme.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -95,7 +143,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primary.withOpacity(0.15) : Colors.transparent,
+          color: isSelected ? AppTheme.primary.withValues(alpha: 0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -123,17 +171,79 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 }
 
 /// Home Dashboard Screen
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  int _calories = 0;
+  int _protein = 0;
+  double _spending = 0;
+  // bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHomeData();
+  }
+
+  Future<void> _loadHomeData() async {
+    final db = ref.read(databaseProvider);
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
+    final endOfDay = startOfDay.add(const Duration(days: 1));
+
+    // Fetch Food Logs
+    final foodLogsQuery = db.select(db.foodLogs).join([
+      drift.innerJoin(db.foods, db.foods.id.equalsExp(db.foodLogs.foodId)),
+    ])..where(db.foodLogs.logDate.isBetweenValues(startOfDay, endOfDay));
+
+    final foodLogs = await foodLogsQuery.get();
+    
+    int totalCals = 0;
+    int totalProt = 0;
+
+    for (var row in foodLogs) {
+      final food = row.readTable(db.foods);
+      final log = row.readTable(db.foodLogs);
+      totalCals += (food.calories * log.servings).round();
+      totalProt += (food.protein * log.servings).round();
+    }
+
+    // Fetch Expenses
+    final expenses = await (db.select(db.expenses)
+      ..where((tbl) => tbl.logDate.isBetweenValues(startOfDay, endOfDay)))
+      .get();
+      
+    final totalSpent = expenses.fold(0.0, (sum, e) => sum + e.amount);
+
+    if (mounted) {
+      setState(() {
+        _calories = totalCals;
+        _protein = totalProt;
+        _spending = totalSpent;
+        // _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Ensure SyncEngine is running
+    ref.watch(syncEngineProvider);
+
     return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      child: RefreshIndicator(
+        onRefresh: _loadHomeData,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -194,9 +304,9 @@ class HomeScreen extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildSummaryStat(context, '0', 'Calories', AppTheme.nutritionColor),
-                      _buildSummaryStat(context, '0g', 'Protein', AppTheme.proteinColor),
-                      _buildSummaryStat(context, '₹0', 'Spent', AppTheme.financeColor),
+                      _buildSummaryStat(context, '$_calories', 'Calories', AppTheme.nutritionColor),
+                      _buildSummaryStat(context, '${_protein}g', 'Protein', AppTheme.proteinColor),
+                      _buildSummaryStat(context, '₹${_spending.toStringAsFixed(0)}', 'Spent', AppTheme.financeColor),
                     ],
                   ),
                 ],
@@ -221,7 +331,13 @@ class HomeScreen extends ConsumerWidget {
                     Icons.fitness_center_rounded,
                     'Log Workout',
                     AppTheme.exerciseGradient,
-                    null,
+                    () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const WorkoutSessionScreen()),
+                      );
+                      if (result == true) _loadHomeData();
+                    },
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -231,7 +347,13 @@ class HomeScreen extends ConsumerWidget {
                     Icons.restaurant_rounded,
                     'Log Food',
                     AppTheme.nutritionGradient,
-                    null,
+                    () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ManualFoodLogScreen()),
+                      );
+                      if (result == true) _loadHomeData();
+                    },
                   ),
                 ),
               ],
@@ -247,7 +369,15 @@ class HomeScreen extends ConsumerWidget {
                     Icons.receipt_long_rounded,
                     'Log Expense',
                     AppTheme.financeGradient,
-                    null,
+                    () async {
+                      final result = await showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => const AddExpenseSheet(),
+                      );
+                      if (result == true) _loadHomeData();
+                    },
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -257,10 +387,13 @@ class HomeScreen extends ConsumerWidget {
                     Icons.monitor_weight_rounded,
                     'Body Stats',
                     AppTheme.primaryGradient,
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const BodyTrackingScreen()),
-                    ),
+                    () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const BodyTrackingScreen()),
+                      );
+                      _loadHomeData();
+                    },
                   ),
                 ),
               ],
@@ -281,14 +414,14 @@ class HomeScreen extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: AppTheme.card,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.insightsColor.withOpacity(0.3)),
+                border: Border.all(color: AppTheme.insightsColor.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppTheme.insightsColor.withOpacity(0.15),
+                      color: AppTheme.insightsColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(
@@ -316,10 +449,22 @@ class HomeScreen extends ConsumerWidget {
                 ],
               ),
             ).animate().fadeIn(delay: 400.ms, duration: 400.ms).slideY(begin: 0.1),
+            
+            const SizedBox(height: 24),
+            
+            // Cloud Sync Section
+            Text(
+              'Cloud Sync',
+              style: Theme.of(context).textTheme.titleMedium,
+            ).animate().fadeIn(delay: 450.ms),
+            
+            const SizedBox(height: 12),
+            
+            _buildSyncCard(context),
           ],
         ),
       ),
-    );
+    ));
   }
 
   String _getGreeting() {
@@ -380,5 +525,147 @@ class HomeScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildSyncCard(BuildContext context) {
+    final authService = ref.read(authServiceProvider);
+    final authState = ref.watch(authStateProvider); // Listen for changes
+    final syncRepo = ref.read(syncRepositoryProvider);
+    
+    // Use authState.value for current user instead of just authService.currentUser
+    final user = authState.value;
+    final isAuthenticated = user != null;
+    final isAnonymous = user?.isAnonymous ?? false;
+    final displayName = user?.displayName ?? user?.email ?? 'Anonymous';
+    final email = user?.email;
+    
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                isAuthenticated ? Icons.cloud_done_rounded : Icons.cloud_off_rounded,
+                color: isAuthenticated ? Colors.green : AppTheme.textMuted,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isAuthenticated 
+                        ? 'Signed in as $displayName'
+                        : 'Not signed in',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    if (email != null && !isAnonymous)
+                      Text(
+                        email,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (!isAuthenticated) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      try {
+                        await authService.signInAnonymously();
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('❌ Error: $e')),
+                          );
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.person_outline),
+                    label: const Text('Anonymous'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      try {
+                        await authService.signInWithGoogle();
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                             const SnackBar(content: Text('✅ Signed in with Google!')),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('❌ Error: $e')),
+                          );
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.g_mobiledata_rounded),
+                    label: const Text('Google'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ] else ...[
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final success = await syncRepo.testConnection();
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(success 
+                              ? '✅ Firestore connected!' 
+                              : '❌ Firestore connection failed'),
+                          ),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.sync),
+                    label: const Text('Test Sync'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      await authService.signOut();
+                      setState(() {});
+                    },
+                    icon: const Icon(Icons.logout),
+                    label: const Text('Sign Out'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    ).animate().fadeIn(delay: 500.ms, duration: 400.ms).slideY(begin: 0.1);
   }
 }
