@@ -10,6 +10,7 @@ import 'features/nutrition/presentation/screens/nutrition_home_screen.dart';
 import 'features/nutrition/presentation/screens/manual_food_log_screen.dart'; // Add this
 import 'features/finance/presentation/screens/finance_home_screen.dart';
 import 'features/body/presentation/screens/body_tracking_screen.dart';
+import 'features/settings/presentation/screens/settings_screen.dart'; // Add this
 
 // Database provider
 final databaseProvider = Provider<AppDatabase>((ref) => AppDatabase());
@@ -49,6 +50,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     const ExerciseHomeScreen(),
     const NutritionHomeScreen(),
     const FinanceHomeScreen(),
+    const SettingsScreen(),
   ];
 
   @override
@@ -79,6 +81,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 _buildNavItem(1, Icons.fitness_center_rounded, 'Exercise'),
                 _buildNavItem(2, Icons.restaurant_rounded, 'Nutrition'),
                 _buildNavItem(3, Icons.account_balance_wallet_rounded, 'Finance'),
+                _buildNavItem(4, Icons.settings_rounded, 'Settings'),
               ],
             ),
           ),

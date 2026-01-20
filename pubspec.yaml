@@ -42,6 +42,9 @@ dependencies:
   uuid: ^4.2.2
   collection: ^1.18.0
   drift_flutter: ^0.2.7
+  file_picker: ^10.3.8
+  share_plus: ^12.0.1
+  permission_handler: ^12.0.1
 
 dev_dependencies:
   flutter_test:

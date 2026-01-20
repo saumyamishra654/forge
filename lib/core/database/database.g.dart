@@ -517,68 +517,6 @@ class $ExerciseLogsTable extends ExerciseLogs
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
-    'remoteId',
-  );
-  @override
-  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
-    'remote_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
-    'syncStatus',
-  );
-  @override
-  late final GeneratedColumn<int> syncStatus = GeneratedColumn<int>(
-    'sync_status',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
-    'isDeleted',
-  );
-  @override
-  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
-    'is_deleted',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_deleted" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -590,11 +528,6 @@ class $ExerciseLogsTable extends ExerciseLogs
     durationMinutes,
     distanceKm,
     notes,
-    remoteId,
-    syncStatus,
-    createdAt,
-    updatedAt,
-    isDeleted,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -666,36 +599,6 @@ class $ExerciseLogsTable extends ExerciseLogs
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
-    if (data.containsKey('remote_id')) {
-      context.handle(
-        _remoteIdMeta,
-        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
-      );
-    }
-    if (data.containsKey('sync_status')) {
-      context.handle(
-        _syncStatusMeta,
-        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
-      );
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    if (data.containsKey('is_deleted')) {
-      context.handle(
-        _isDeletedMeta,
-        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
-      );
-    }
     return context;
   }
 
@@ -741,26 +644,6 @@ class $ExerciseLogsTable extends ExerciseLogs
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
-      remoteId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}remote_id'],
-      ),
-      syncStatus: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}sync_status'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-      isDeleted: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_deleted'],
-      )!,
     );
   }
 
@@ -780,11 +663,6 @@ class ExerciseLog extends DataClass implements Insertable<ExerciseLog> {
   final int? durationMinutes;
   final double? distanceKm;
   final String? notes;
-  final String? remoteId;
-  final int syncStatus;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final bool isDeleted;
   const ExerciseLog({
     required this.id,
     required this.logDate,
@@ -795,11 +673,6 @@ class ExerciseLog extends DataClass implements Insertable<ExerciseLog> {
     this.durationMinutes,
     this.distanceKm,
     this.notes,
-    this.remoteId,
-    required this.syncStatus,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.isDeleted,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -825,13 +698,6 @@ class ExerciseLog extends DataClass implements Insertable<ExerciseLog> {
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
-    if (!nullToAbsent || remoteId != null) {
-      map['remote_id'] = Variable<String>(remoteId);
-    }
-    map['sync_status'] = Variable<int>(syncStatus);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['is_deleted'] = Variable<bool>(isDeleted);
     return map;
   }
 
@@ -854,13 +720,6 @@ class ExerciseLog extends DataClass implements Insertable<ExerciseLog> {
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
-      remoteId: remoteId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(remoteId),
-      syncStatus: Value(syncStatus),
-      createdAt: Value(createdAt),
-      updatedAt: Value(updatedAt),
-      isDeleted: Value(isDeleted),
     );
   }
 
@@ -879,11 +738,6 @@ class ExerciseLog extends DataClass implements Insertable<ExerciseLog> {
       durationMinutes: serializer.fromJson<int?>(json['durationMinutes']),
       distanceKm: serializer.fromJson<double?>(json['distanceKm']),
       notes: serializer.fromJson<String?>(json['notes']),
-      remoteId: serializer.fromJson<String?>(json['remoteId']),
-      syncStatus: serializer.fromJson<int>(json['syncStatus']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
     );
   }
   @override
@@ -899,11 +753,6 @@ class ExerciseLog extends DataClass implements Insertable<ExerciseLog> {
       'durationMinutes': serializer.toJson<int?>(durationMinutes),
       'distanceKm': serializer.toJson<double?>(distanceKm),
       'notes': serializer.toJson<String?>(notes),
-      'remoteId': serializer.toJson<String?>(remoteId),
-      'syncStatus': serializer.toJson<int>(syncStatus),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'isDeleted': serializer.toJson<bool>(isDeleted),
     };
   }
 
@@ -917,11 +766,6 @@ class ExerciseLog extends DataClass implements Insertable<ExerciseLog> {
     Value<int?> durationMinutes = const Value.absent(),
     Value<double?> distanceKm = const Value.absent(),
     Value<String?> notes = const Value.absent(),
-    Value<String?> remoteId = const Value.absent(),
-    int? syncStatus,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    bool? isDeleted,
   }) => ExerciseLog(
     id: id ?? this.id,
     logDate: logDate ?? this.logDate,
@@ -934,11 +778,6 @@ class ExerciseLog extends DataClass implements Insertable<ExerciseLog> {
         : this.durationMinutes,
     distanceKm: distanceKm.present ? distanceKm.value : this.distanceKm,
     notes: notes.present ? notes.value : this.notes,
-    remoteId: remoteId.present ? remoteId.value : this.remoteId,
-    syncStatus: syncStatus ?? this.syncStatus,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    isDeleted: isDeleted ?? this.isDeleted,
   );
   ExerciseLog copyWithCompanion(ExerciseLogsCompanion data) {
     return ExerciseLog(
@@ -957,13 +796,6 @@ class ExerciseLog extends DataClass implements Insertable<ExerciseLog> {
           ? data.distanceKm.value
           : this.distanceKm,
       notes: data.notes.present ? data.notes.value : this.notes,
-      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
-      syncStatus: data.syncStatus.present
-          ? data.syncStatus.value
-          : this.syncStatus,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
     );
   }
 
@@ -978,12 +810,7 @@ class ExerciseLog extends DataClass implements Insertable<ExerciseLog> {
           ..write('weight: $weight, ')
           ..write('durationMinutes: $durationMinutes, ')
           ..write('distanceKm: $distanceKm, ')
-          ..write('notes: $notes, ')
-          ..write('remoteId: $remoteId, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('isDeleted: $isDeleted')
+          ..write('notes: $notes')
           ..write(')'))
         .toString();
   }
@@ -999,11 +826,6 @@ class ExerciseLog extends DataClass implements Insertable<ExerciseLog> {
     durationMinutes,
     distanceKm,
     notes,
-    remoteId,
-    syncStatus,
-    createdAt,
-    updatedAt,
-    isDeleted,
   );
   @override
   bool operator ==(Object other) =>
@@ -1017,12 +839,7 @@ class ExerciseLog extends DataClass implements Insertable<ExerciseLog> {
           other.weight == this.weight &&
           other.durationMinutes == this.durationMinutes &&
           other.distanceKm == this.distanceKm &&
-          other.notes == this.notes &&
-          other.remoteId == this.remoteId &&
-          other.syncStatus == this.syncStatus &&
-          other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt &&
-          other.isDeleted == this.isDeleted);
+          other.notes == this.notes);
 }
 
 class ExerciseLogsCompanion extends UpdateCompanion<ExerciseLog> {
@@ -1035,11 +852,6 @@ class ExerciseLogsCompanion extends UpdateCompanion<ExerciseLog> {
   final Value<int?> durationMinutes;
   final Value<double?> distanceKm;
   final Value<String?> notes;
-  final Value<String?> remoteId;
-  final Value<int> syncStatus;
-  final Value<DateTime> createdAt;
-  final Value<DateTime> updatedAt;
-  final Value<bool> isDeleted;
   const ExerciseLogsCompanion({
     this.id = const Value.absent(),
     this.logDate = const Value.absent(),
@@ -1050,11 +862,6 @@ class ExerciseLogsCompanion extends UpdateCompanion<ExerciseLog> {
     this.durationMinutes = const Value.absent(),
     this.distanceKm = const Value.absent(),
     this.notes = const Value.absent(),
-    this.remoteId = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.isDeleted = const Value.absent(),
   });
   ExerciseLogsCompanion.insert({
     this.id = const Value.absent(),
@@ -1066,11 +873,6 @@ class ExerciseLogsCompanion extends UpdateCompanion<ExerciseLog> {
     this.durationMinutes = const Value.absent(),
     this.distanceKm = const Value.absent(),
     this.notes = const Value.absent(),
-    this.remoteId = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.isDeleted = const Value.absent(),
   }) : logDate = Value(logDate),
        exerciseId = Value(exerciseId);
   static Insertable<ExerciseLog> custom({
@@ -1083,11 +885,6 @@ class ExerciseLogsCompanion extends UpdateCompanion<ExerciseLog> {
     Expression<int>? durationMinutes,
     Expression<double>? distanceKm,
     Expression<String>? notes,
-    Expression<String>? remoteId,
-    Expression<int>? syncStatus,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? updatedAt,
-    Expression<bool>? isDeleted,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1099,11 +896,6 @@ class ExerciseLogsCompanion extends UpdateCompanion<ExerciseLog> {
       if (durationMinutes != null) 'duration_minutes': durationMinutes,
       if (distanceKm != null) 'distance_km': distanceKm,
       if (notes != null) 'notes': notes,
-      if (remoteId != null) 'remote_id': remoteId,
-      if (syncStatus != null) 'sync_status': syncStatus,
-      if (createdAt != null) 'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (isDeleted != null) 'is_deleted': isDeleted,
     });
   }
 
@@ -1117,11 +909,6 @@ class ExerciseLogsCompanion extends UpdateCompanion<ExerciseLog> {
     Value<int?>? durationMinutes,
     Value<double?>? distanceKm,
     Value<String?>? notes,
-    Value<String?>? remoteId,
-    Value<int>? syncStatus,
-    Value<DateTime>? createdAt,
-    Value<DateTime>? updatedAt,
-    Value<bool>? isDeleted,
   }) {
     return ExerciseLogsCompanion(
       id: id ?? this.id,
@@ -1133,11 +920,6 @@ class ExerciseLogsCompanion extends UpdateCompanion<ExerciseLog> {
       durationMinutes: durationMinutes ?? this.durationMinutes,
       distanceKm: distanceKm ?? this.distanceKm,
       notes: notes ?? this.notes,
-      remoteId: remoteId ?? this.remoteId,
-      syncStatus: syncStatus ?? this.syncStatus,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 
@@ -1171,21 +953,6 @@ class ExerciseLogsCompanion extends UpdateCompanion<ExerciseLog> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
-    if (remoteId.present) {
-      map['remote_id'] = Variable<String>(remoteId.value);
-    }
-    if (syncStatus.present) {
-      map['sync_status'] = Variable<int>(syncStatus.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    if (isDeleted.present) {
-      map['is_deleted'] = Variable<bool>(isDeleted.value);
-    }
     return map;
   }
 
@@ -1200,12 +967,7 @@ class ExerciseLogsCompanion extends UpdateCompanion<ExerciseLog> {
           ..write('weight: $weight, ')
           ..write('durationMinutes: $durationMinutes, ')
           ..write('distanceKm: $distanceKm, ')
-          ..write('notes: $notes, ')
-          ..write('remoteId: $remoteId, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('isDeleted: $isDeleted')
+          ..write('notes: $notes')
           ..write(')'))
         .toString();
   }
@@ -2114,68 +1876,6 @@ class $FoodLogsTable extends FoodLogs with TableInfo<$FoodLogsTable, FoodLog> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
-    'remoteId',
-  );
-  @override
-  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
-    'remote_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
-    'syncStatus',
-  );
-  @override
-  late final GeneratedColumn<int> syncStatus = GeneratedColumn<int>(
-    'sync_status',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
-    'isDeleted',
-  );
-  @override
-  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
-    'is_deleted',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_deleted" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2183,11 +1883,6 @@ class $FoodLogsTable extends FoodLogs with TableInfo<$FoodLogsTable, FoodLog> {
     foodId,
     servings,
     mealType,
-    remoteId,
-    syncStatus,
-    createdAt,
-    updatedAt,
-    isDeleted,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2234,36 +1929,6 @@ class $FoodLogsTable extends FoodLogs with TableInfo<$FoodLogsTable, FoodLog> {
     } else if (isInserting) {
       context.missing(_mealTypeMeta);
     }
-    if (data.containsKey('remote_id')) {
-      context.handle(
-        _remoteIdMeta,
-        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
-      );
-    }
-    if (data.containsKey('sync_status')) {
-      context.handle(
-        _syncStatusMeta,
-        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
-      );
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    if (data.containsKey('is_deleted')) {
-      context.handle(
-        _isDeletedMeta,
-        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
-      );
-    }
     return context;
   }
 
@@ -2293,26 +1958,6 @@ class $FoodLogsTable extends FoodLogs with TableInfo<$FoodLogsTable, FoodLog> {
         DriftSqlType.string,
         data['${effectivePrefix}meal_type'],
       )!,
-      remoteId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}remote_id'],
-      ),
-      syncStatus: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}sync_status'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-      isDeleted: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_deleted'],
-      )!,
     );
   }
 
@@ -2328,22 +1973,12 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
   final int foodId;
   final double servings;
   final String mealType;
-  final String? remoteId;
-  final int syncStatus;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final bool isDeleted;
   const FoodLog({
     required this.id,
     required this.logDate,
     required this.foodId,
     required this.servings,
     required this.mealType,
-    this.remoteId,
-    required this.syncStatus,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.isDeleted,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2353,13 +1988,6 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
     map['food_id'] = Variable<int>(foodId);
     map['servings'] = Variable<double>(servings);
     map['meal_type'] = Variable<String>(mealType);
-    if (!nullToAbsent || remoteId != null) {
-      map['remote_id'] = Variable<String>(remoteId);
-    }
-    map['sync_status'] = Variable<int>(syncStatus);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['is_deleted'] = Variable<bool>(isDeleted);
     return map;
   }
 
@@ -2370,13 +1998,6 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
       foodId: Value(foodId),
       servings: Value(servings),
       mealType: Value(mealType),
-      remoteId: remoteId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(remoteId),
-      syncStatus: Value(syncStatus),
-      createdAt: Value(createdAt),
-      updatedAt: Value(updatedAt),
-      isDeleted: Value(isDeleted),
     );
   }
 
@@ -2391,11 +2012,6 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
       foodId: serializer.fromJson<int>(json['foodId']),
       servings: serializer.fromJson<double>(json['servings']),
       mealType: serializer.fromJson<String>(json['mealType']),
-      remoteId: serializer.fromJson<String?>(json['remoteId']),
-      syncStatus: serializer.fromJson<int>(json['syncStatus']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
     );
   }
   @override
@@ -2407,11 +2023,6 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
       'foodId': serializer.toJson<int>(foodId),
       'servings': serializer.toJson<double>(servings),
       'mealType': serializer.toJson<String>(mealType),
-      'remoteId': serializer.toJson<String?>(remoteId),
-      'syncStatus': serializer.toJson<int>(syncStatus),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'isDeleted': serializer.toJson<bool>(isDeleted),
     };
   }
 
@@ -2421,22 +2032,12 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
     int? foodId,
     double? servings,
     String? mealType,
-    Value<String?> remoteId = const Value.absent(),
-    int? syncStatus,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    bool? isDeleted,
   }) => FoodLog(
     id: id ?? this.id,
     logDate: logDate ?? this.logDate,
     foodId: foodId ?? this.foodId,
     servings: servings ?? this.servings,
     mealType: mealType ?? this.mealType,
-    remoteId: remoteId.present ? remoteId.value : this.remoteId,
-    syncStatus: syncStatus ?? this.syncStatus,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    isDeleted: isDeleted ?? this.isDeleted,
   );
   FoodLog copyWithCompanion(FoodLogsCompanion data) {
     return FoodLog(
@@ -2445,13 +2046,6 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
       foodId: data.foodId.present ? data.foodId.value : this.foodId,
       servings: data.servings.present ? data.servings.value : this.servings,
       mealType: data.mealType.present ? data.mealType.value : this.mealType,
-      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
-      syncStatus: data.syncStatus.present
-          ? data.syncStatus.value
-          : this.syncStatus,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
     );
   }
 
@@ -2462,29 +2056,13 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
           ..write('logDate: $logDate, ')
           ..write('foodId: $foodId, ')
           ..write('servings: $servings, ')
-          ..write('mealType: $mealType, ')
-          ..write('remoteId: $remoteId, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('isDeleted: $isDeleted')
+          ..write('mealType: $mealType')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-    id,
-    logDate,
-    foodId,
-    servings,
-    mealType,
-    remoteId,
-    syncStatus,
-    createdAt,
-    updatedAt,
-    isDeleted,
-  );
+  int get hashCode => Object.hash(id, logDate, foodId, servings, mealType);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2493,12 +2071,7 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
           other.logDate == this.logDate &&
           other.foodId == this.foodId &&
           other.servings == this.servings &&
-          other.mealType == this.mealType &&
-          other.remoteId == this.remoteId &&
-          other.syncStatus == this.syncStatus &&
-          other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt &&
-          other.isDeleted == this.isDeleted);
+          other.mealType == this.mealType);
 }
 
 class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
@@ -2507,22 +2080,12 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
   final Value<int> foodId;
   final Value<double> servings;
   final Value<String> mealType;
-  final Value<String?> remoteId;
-  final Value<int> syncStatus;
-  final Value<DateTime> createdAt;
-  final Value<DateTime> updatedAt;
-  final Value<bool> isDeleted;
   const FoodLogsCompanion({
     this.id = const Value.absent(),
     this.logDate = const Value.absent(),
     this.foodId = const Value.absent(),
     this.servings = const Value.absent(),
     this.mealType = const Value.absent(),
-    this.remoteId = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.isDeleted = const Value.absent(),
   });
   FoodLogsCompanion.insert({
     this.id = const Value.absent(),
@@ -2530,11 +2093,6 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
     required int foodId,
     this.servings = const Value.absent(),
     required String mealType,
-    this.remoteId = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.isDeleted = const Value.absent(),
   }) : logDate = Value(logDate),
        foodId = Value(foodId),
        mealType = Value(mealType);
@@ -2544,11 +2102,6 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
     Expression<int>? foodId,
     Expression<double>? servings,
     Expression<String>? mealType,
-    Expression<String>? remoteId,
-    Expression<int>? syncStatus,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? updatedAt,
-    Expression<bool>? isDeleted,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2556,11 +2109,6 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
       if (foodId != null) 'food_id': foodId,
       if (servings != null) 'servings': servings,
       if (mealType != null) 'meal_type': mealType,
-      if (remoteId != null) 'remote_id': remoteId,
-      if (syncStatus != null) 'sync_status': syncStatus,
-      if (createdAt != null) 'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (isDeleted != null) 'is_deleted': isDeleted,
     });
   }
 
@@ -2570,11 +2118,6 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
     Value<int>? foodId,
     Value<double>? servings,
     Value<String>? mealType,
-    Value<String?>? remoteId,
-    Value<int>? syncStatus,
-    Value<DateTime>? createdAt,
-    Value<DateTime>? updatedAt,
-    Value<bool>? isDeleted,
   }) {
     return FoodLogsCompanion(
       id: id ?? this.id,
@@ -2582,11 +2125,6 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
       foodId: foodId ?? this.foodId,
       servings: servings ?? this.servings,
       mealType: mealType ?? this.mealType,
-      remoteId: remoteId ?? this.remoteId,
-      syncStatus: syncStatus ?? this.syncStatus,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 
@@ -2608,21 +2146,6 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
     if (mealType.present) {
       map['meal_type'] = Variable<String>(mealType.value);
     }
-    if (remoteId.present) {
-      map['remote_id'] = Variable<String>(remoteId.value);
-    }
-    if (syncStatus.present) {
-      map['sync_status'] = Variable<int>(syncStatus.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    if (isDeleted.present) {
-      map['is_deleted'] = Variable<bool>(isDeleted.value);
-    }
     return map;
   }
 
@@ -2633,12 +2156,7 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
           ..write('logDate: $logDate, ')
           ..write('foodId: $foodId, ')
           ..write('servings: $servings, ')
-          ..write('mealType: $mealType, ')
-          ..write('remoteId: $remoteId, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('isDeleted: $isDeleted')
+          ..write('mealType: $mealType')
           ..write(')'))
         .toString();
   }
@@ -2997,80 +2515,8 @@ class $SupplementLogsTable extends SupplementLogs
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
-    'remoteId',
-  );
   @override
-  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
-    'remote_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
-    'syncStatus',
-  );
-  @override
-  late final GeneratedColumn<int> syncStatus = GeneratedColumn<int>(
-    'sync_status',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
-    'isDeleted',
-  );
-  @override
-  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
-    'is_deleted',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_deleted" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    logDate,
-    supplementId,
-    dosage,
-    remoteId,
-    syncStatus,
-    createdAt,
-    updatedAt,
-    isDeleted,
-  ];
+  List<GeneratedColumn> get $columns => [id, logDate, supplementId, dosage];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -3113,36 +2559,6 @@ class $SupplementLogsTable extends SupplementLogs
     } else if (isInserting) {
       context.missing(_dosageMeta);
     }
-    if (data.containsKey('remote_id')) {
-      context.handle(
-        _remoteIdMeta,
-        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
-      );
-    }
-    if (data.containsKey('sync_status')) {
-      context.handle(
-        _syncStatusMeta,
-        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
-      );
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    if (data.containsKey('is_deleted')) {
-      context.handle(
-        _isDeletedMeta,
-        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
-      );
-    }
     return context;
   }
 
@@ -3168,26 +2584,6 @@ class $SupplementLogsTable extends SupplementLogs
         DriftSqlType.double,
         data['${effectivePrefix}dosage'],
       )!,
-      remoteId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}remote_id'],
-      ),
-      syncStatus: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}sync_status'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-      isDeleted: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_deleted'],
-      )!,
     );
   }
 
@@ -3202,21 +2598,11 @@ class SupplementLog extends DataClass implements Insertable<SupplementLog> {
   final DateTime logDate;
   final int supplementId;
   final double dosage;
-  final String? remoteId;
-  final int syncStatus;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final bool isDeleted;
   const SupplementLog({
     required this.id,
     required this.logDate,
     required this.supplementId,
     required this.dosage,
-    this.remoteId,
-    required this.syncStatus,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.isDeleted,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3225,13 +2611,6 @@ class SupplementLog extends DataClass implements Insertable<SupplementLog> {
     map['log_date'] = Variable<DateTime>(logDate);
     map['supplement_id'] = Variable<int>(supplementId);
     map['dosage'] = Variable<double>(dosage);
-    if (!nullToAbsent || remoteId != null) {
-      map['remote_id'] = Variable<String>(remoteId);
-    }
-    map['sync_status'] = Variable<int>(syncStatus);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['is_deleted'] = Variable<bool>(isDeleted);
     return map;
   }
 
@@ -3241,13 +2620,6 @@ class SupplementLog extends DataClass implements Insertable<SupplementLog> {
       logDate: Value(logDate),
       supplementId: Value(supplementId),
       dosage: Value(dosage),
-      remoteId: remoteId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(remoteId),
-      syncStatus: Value(syncStatus),
-      createdAt: Value(createdAt),
-      updatedAt: Value(updatedAt),
-      isDeleted: Value(isDeleted),
     );
   }
 
@@ -3261,11 +2633,6 @@ class SupplementLog extends DataClass implements Insertable<SupplementLog> {
       logDate: serializer.fromJson<DateTime>(json['logDate']),
       supplementId: serializer.fromJson<int>(json['supplementId']),
       dosage: serializer.fromJson<double>(json['dosage']),
-      remoteId: serializer.fromJson<String?>(json['remoteId']),
-      syncStatus: serializer.fromJson<int>(json['syncStatus']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
     );
   }
   @override
@@ -3276,11 +2643,6 @@ class SupplementLog extends DataClass implements Insertable<SupplementLog> {
       'logDate': serializer.toJson<DateTime>(logDate),
       'supplementId': serializer.toJson<int>(supplementId),
       'dosage': serializer.toJson<double>(dosage),
-      'remoteId': serializer.toJson<String?>(remoteId),
-      'syncStatus': serializer.toJson<int>(syncStatus),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'isDeleted': serializer.toJson<bool>(isDeleted),
     };
   }
 
@@ -3289,21 +2651,11 @@ class SupplementLog extends DataClass implements Insertable<SupplementLog> {
     DateTime? logDate,
     int? supplementId,
     double? dosage,
-    Value<String?> remoteId = const Value.absent(),
-    int? syncStatus,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    bool? isDeleted,
   }) => SupplementLog(
     id: id ?? this.id,
     logDate: logDate ?? this.logDate,
     supplementId: supplementId ?? this.supplementId,
     dosage: dosage ?? this.dosage,
-    remoteId: remoteId.present ? remoteId.value : this.remoteId,
-    syncStatus: syncStatus ?? this.syncStatus,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    isDeleted: isDeleted ?? this.isDeleted,
   );
   SupplementLog copyWithCompanion(SupplementLogsCompanion data) {
     return SupplementLog(
@@ -3313,13 +2665,6 @@ class SupplementLog extends DataClass implements Insertable<SupplementLog> {
           ? data.supplementId.value
           : this.supplementId,
       dosage: data.dosage.present ? data.dosage.value : this.dosage,
-      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
-      syncStatus: data.syncStatus.present
-          ? data.syncStatus.value
-          : this.syncStatus,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
     );
   }
 
@@ -3329,28 +2674,13 @@ class SupplementLog extends DataClass implements Insertable<SupplementLog> {
           ..write('id: $id, ')
           ..write('logDate: $logDate, ')
           ..write('supplementId: $supplementId, ')
-          ..write('dosage: $dosage, ')
-          ..write('remoteId: $remoteId, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('isDeleted: $isDeleted')
+          ..write('dosage: $dosage')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-    id,
-    logDate,
-    supplementId,
-    dosage,
-    remoteId,
-    syncStatus,
-    createdAt,
-    updatedAt,
-    isDeleted,
-  );
+  int get hashCode => Object.hash(id, logDate, supplementId, dosage);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3358,12 +2688,7 @@ class SupplementLog extends DataClass implements Insertable<SupplementLog> {
           other.id == this.id &&
           other.logDate == this.logDate &&
           other.supplementId == this.supplementId &&
-          other.dosage == this.dosage &&
-          other.remoteId == this.remoteId &&
-          other.syncStatus == this.syncStatus &&
-          other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt &&
-          other.isDeleted == this.isDeleted);
+          other.dosage == this.dosage);
 }
 
 class SupplementLogsCompanion extends UpdateCompanion<SupplementLog> {
@@ -3371,32 +2696,17 @@ class SupplementLogsCompanion extends UpdateCompanion<SupplementLog> {
   final Value<DateTime> logDate;
   final Value<int> supplementId;
   final Value<double> dosage;
-  final Value<String?> remoteId;
-  final Value<int> syncStatus;
-  final Value<DateTime> createdAt;
-  final Value<DateTime> updatedAt;
-  final Value<bool> isDeleted;
   const SupplementLogsCompanion({
     this.id = const Value.absent(),
     this.logDate = const Value.absent(),
     this.supplementId = const Value.absent(),
     this.dosage = const Value.absent(),
-    this.remoteId = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.isDeleted = const Value.absent(),
   });
   SupplementLogsCompanion.insert({
     this.id = const Value.absent(),
     required DateTime logDate,
     required int supplementId,
     required double dosage,
-    this.remoteId = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.isDeleted = const Value.absent(),
   }) : logDate = Value(logDate),
        supplementId = Value(supplementId),
        dosage = Value(dosage);
@@ -3405,22 +2715,12 @@ class SupplementLogsCompanion extends UpdateCompanion<SupplementLog> {
     Expression<DateTime>? logDate,
     Expression<int>? supplementId,
     Expression<double>? dosage,
-    Expression<String>? remoteId,
-    Expression<int>? syncStatus,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? updatedAt,
-    Expression<bool>? isDeleted,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (logDate != null) 'log_date': logDate,
       if (supplementId != null) 'supplement_id': supplementId,
       if (dosage != null) 'dosage': dosage,
-      if (remoteId != null) 'remote_id': remoteId,
-      if (syncStatus != null) 'sync_status': syncStatus,
-      if (createdAt != null) 'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (isDeleted != null) 'is_deleted': isDeleted,
     });
   }
 
@@ -3429,22 +2729,12 @@ class SupplementLogsCompanion extends UpdateCompanion<SupplementLog> {
     Value<DateTime>? logDate,
     Value<int>? supplementId,
     Value<double>? dosage,
-    Value<String?>? remoteId,
-    Value<int>? syncStatus,
-    Value<DateTime>? createdAt,
-    Value<DateTime>? updatedAt,
-    Value<bool>? isDeleted,
   }) {
     return SupplementLogsCompanion(
       id: id ?? this.id,
       logDate: logDate ?? this.logDate,
       supplementId: supplementId ?? this.supplementId,
       dosage: dosage ?? this.dosage,
-      remoteId: remoteId ?? this.remoteId,
-      syncStatus: syncStatus ?? this.syncStatus,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 
@@ -3463,21 +2753,6 @@ class SupplementLogsCompanion extends UpdateCompanion<SupplementLog> {
     if (dosage.present) {
       map['dosage'] = Variable<double>(dosage.value);
     }
-    if (remoteId.present) {
-      map['remote_id'] = Variable<String>(remoteId.value);
-    }
-    if (syncStatus.present) {
-      map['sync_status'] = Variable<int>(syncStatus.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    if (isDeleted.present) {
-      map['is_deleted'] = Variable<bool>(isDeleted.value);
-    }
     return map;
   }
 
@@ -3487,12 +2762,7 @@ class SupplementLogsCompanion extends UpdateCompanion<SupplementLog> {
           ..write('id: $id, ')
           ..write('logDate: $logDate, ')
           ..write('supplementId: $supplementId, ')
-          ..write('dosage: $dosage, ')
-          ..write('remoteId: $remoteId, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('isDeleted: $isDeleted')
+          ..write('dosage: $dosage')
           ..write(')'))
         .toString();
   }
@@ -3570,68 +2840,6 @@ class $AlcoholLogsTable extends AlcoholLogs
     type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
-    'remoteId',
-  );
-  @override
-  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
-    'remote_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
-    'syncStatus',
-  );
-  @override
-  late final GeneratedColumn<int> syncStatus = GeneratedColumn<int>(
-    'sync_status',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
-    'isDeleted',
-  );
-  @override
-  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
-    'is_deleted',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_deleted" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3640,11 +2848,6 @@ class $AlcoholLogsTable extends AlcoholLogs
     units,
     calories,
     volumeMl,
-    remoteId,
-    syncStatus,
-    createdAt,
-    updatedAt,
-    isDeleted,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3699,36 +2902,6 @@ class $AlcoholLogsTable extends AlcoholLogs
         volumeMl.isAcceptableOrUnknown(data['volume_ml']!, _volumeMlMeta),
       );
     }
-    if (data.containsKey('remote_id')) {
-      context.handle(
-        _remoteIdMeta,
-        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
-      );
-    }
-    if (data.containsKey('sync_status')) {
-      context.handle(
-        _syncStatusMeta,
-        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
-      );
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    if (data.containsKey('is_deleted')) {
-      context.handle(
-        _isDeletedMeta,
-        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
-      );
-    }
     return context;
   }
 
@@ -3762,26 +2935,6 @@ class $AlcoholLogsTable extends AlcoholLogs
         DriftSqlType.double,
         data['${effectivePrefix}volume_ml'],
       ),
-      remoteId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}remote_id'],
-      ),
-      syncStatus: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}sync_status'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-      isDeleted: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_deleted'],
-      )!,
     );
   }
 
@@ -3798,11 +2951,6 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
   final double units;
   final double calories;
   final double? volumeMl;
-  final String? remoteId;
-  final int syncStatus;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final bool isDeleted;
   const AlcoholLog({
     required this.id,
     required this.logDate,
@@ -3810,11 +2958,6 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
     required this.units,
     required this.calories,
     this.volumeMl,
-    this.remoteId,
-    required this.syncStatus,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.isDeleted,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3827,13 +2970,6 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
     if (!nullToAbsent || volumeMl != null) {
       map['volume_ml'] = Variable<double>(volumeMl);
     }
-    if (!nullToAbsent || remoteId != null) {
-      map['remote_id'] = Variable<String>(remoteId);
-    }
-    map['sync_status'] = Variable<int>(syncStatus);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['is_deleted'] = Variable<bool>(isDeleted);
     return map;
   }
 
@@ -3847,13 +2983,6 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
       volumeMl: volumeMl == null && nullToAbsent
           ? const Value.absent()
           : Value(volumeMl),
-      remoteId: remoteId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(remoteId),
-      syncStatus: Value(syncStatus),
-      createdAt: Value(createdAt),
-      updatedAt: Value(updatedAt),
-      isDeleted: Value(isDeleted),
     );
   }
 
@@ -3869,11 +2998,6 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
       units: serializer.fromJson<double>(json['units']),
       calories: serializer.fromJson<double>(json['calories']),
       volumeMl: serializer.fromJson<double?>(json['volumeMl']),
-      remoteId: serializer.fromJson<String?>(json['remoteId']),
-      syncStatus: serializer.fromJson<int>(json['syncStatus']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
     );
   }
   @override
@@ -3886,11 +3010,6 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
       'units': serializer.toJson<double>(units),
       'calories': serializer.toJson<double>(calories),
       'volumeMl': serializer.toJson<double?>(volumeMl),
-      'remoteId': serializer.toJson<String?>(remoteId),
-      'syncStatus': serializer.toJson<int>(syncStatus),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'isDeleted': serializer.toJson<bool>(isDeleted),
     };
   }
 
@@ -3901,11 +3020,6 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
     double? units,
     double? calories,
     Value<double?> volumeMl = const Value.absent(),
-    Value<String?> remoteId = const Value.absent(),
-    int? syncStatus,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    bool? isDeleted,
   }) => AlcoholLog(
     id: id ?? this.id,
     logDate: logDate ?? this.logDate,
@@ -3913,11 +3027,6 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
     units: units ?? this.units,
     calories: calories ?? this.calories,
     volumeMl: volumeMl.present ? volumeMl.value : this.volumeMl,
-    remoteId: remoteId.present ? remoteId.value : this.remoteId,
-    syncStatus: syncStatus ?? this.syncStatus,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    isDeleted: isDeleted ?? this.isDeleted,
   );
   AlcoholLog copyWithCompanion(AlcoholLogsCompanion data) {
     return AlcoholLog(
@@ -3927,13 +3036,6 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
       units: data.units.present ? data.units.value : this.units,
       calories: data.calories.present ? data.calories.value : this.calories,
       volumeMl: data.volumeMl.present ? data.volumeMl.value : this.volumeMl,
-      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
-      syncStatus: data.syncStatus.present
-          ? data.syncStatus.value
-          : this.syncStatus,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
     );
   }
 
@@ -3945,30 +3047,14 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
           ..write('drinkType: $drinkType, ')
           ..write('units: $units, ')
           ..write('calories: $calories, ')
-          ..write('volumeMl: $volumeMl, ')
-          ..write('remoteId: $remoteId, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('isDeleted: $isDeleted')
+          ..write('volumeMl: $volumeMl')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-    id,
-    logDate,
-    drinkType,
-    units,
-    calories,
-    volumeMl,
-    remoteId,
-    syncStatus,
-    createdAt,
-    updatedAt,
-    isDeleted,
-  );
+  int get hashCode =>
+      Object.hash(id, logDate, drinkType, units, calories, volumeMl);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3978,12 +3064,7 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
           other.drinkType == this.drinkType &&
           other.units == this.units &&
           other.calories == this.calories &&
-          other.volumeMl == this.volumeMl &&
-          other.remoteId == this.remoteId &&
-          other.syncStatus == this.syncStatus &&
-          other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt &&
-          other.isDeleted == this.isDeleted);
+          other.volumeMl == this.volumeMl);
 }
 
 class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
@@ -3993,11 +3074,6 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
   final Value<double> units;
   final Value<double> calories;
   final Value<double?> volumeMl;
-  final Value<String?> remoteId;
-  final Value<int> syncStatus;
-  final Value<DateTime> createdAt;
-  final Value<DateTime> updatedAt;
-  final Value<bool> isDeleted;
   const AlcoholLogsCompanion({
     this.id = const Value.absent(),
     this.logDate = const Value.absent(),
@@ -4005,11 +3081,6 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
     this.units = const Value.absent(),
     this.calories = const Value.absent(),
     this.volumeMl = const Value.absent(),
-    this.remoteId = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.isDeleted = const Value.absent(),
   });
   AlcoholLogsCompanion.insert({
     this.id = const Value.absent(),
@@ -4018,11 +3089,6 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
     required double units,
     required double calories,
     this.volumeMl = const Value.absent(),
-    this.remoteId = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.isDeleted = const Value.absent(),
   }) : logDate = Value(logDate),
        drinkType = Value(drinkType),
        units = Value(units),
@@ -4034,11 +3100,6 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
     Expression<double>? units,
     Expression<double>? calories,
     Expression<double>? volumeMl,
-    Expression<String>? remoteId,
-    Expression<int>? syncStatus,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? updatedAt,
-    Expression<bool>? isDeleted,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -4047,11 +3108,6 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
       if (units != null) 'units': units,
       if (calories != null) 'calories': calories,
       if (volumeMl != null) 'volume_ml': volumeMl,
-      if (remoteId != null) 'remote_id': remoteId,
-      if (syncStatus != null) 'sync_status': syncStatus,
-      if (createdAt != null) 'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (isDeleted != null) 'is_deleted': isDeleted,
     });
   }
 
@@ -4062,11 +3118,6 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
     Value<double>? units,
     Value<double>? calories,
     Value<double?>? volumeMl,
-    Value<String?>? remoteId,
-    Value<int>? syncStatus,
-    Value<DateTime>? createdAt,
-    Value<DateTime>? updatedAt,
-    Value<bool>? isDeleted,
   }) {
     return AlcoholLogsCompanion(
       id: id ?? this.id,
@@ -4075,11 +3126,6 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
       units: units ?? this.units,
       calories: calories ?? this.calories,
       volumeMl: volumeMl ?? this.volumeMl,
-      remoteId: remoteId ?? this.remoteId,
-      syncStatus: syncStatus ?? this.syncStatus,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 
@@ -4104,21 +3150,6 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
     if (volumeMl.present) {
       map['volume_ml'] = Variable<double>(volumeMl.value);
     }
-    if (remoteId.present) {
-      map['remote_id'] = Variable<String>(remoteId.value);
-    }
-    if (syncStatus.present) {
-      map['sync_status'] = Variable<int>(syncStatus.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    if (isDeleted.present) {
-      map['is_deleted'] = Variable<bool>(isDeleted.value);
-    }
     return map;
   }
 
@@ -4130,12 +3161,7 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
           ..write('drinkType: $drinkType, ')
           ..write('units: $units, ')
           ..write('calories: $calories, ')
-          ..write('volumeMl: $volumeMl, ')
-          ..write('remoteId: $remoteId, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('isDeleted: $isDeleted')
+          ..write('volumeMl: $volumeMl')
           ..write(')'))
         .toString();
   }
@@ -4191,80 +3217,8 @@ class $WeightLogsTable extends WeightLogs
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
-    'remoteId',
-  );
   @override
-  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
-    'remote_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
-    'syncStatus',
-  );
-  @override
-  late final GeneratedColumn<int> syncStatus = GeneratedColumn<int>(
-    'sync_status',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
-    'isDeleted',
-  );
-  @override
-  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
-    'is_deleted',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_deleted" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    logDate,
-    weightKg,
-    notes,
-    remoteId,
-    syncStatus,
-    createdAt,
-    updatedAt,
-    isDeleted,
-  ];
+  List<GeneratedColumn> get $columns => [id, logDate, weightKg, notes];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -4302,36 +3256,6 @@ class $WeightLogsTable extends WeightLogs
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
-    if (data.containsKey('remote_id')) {
-      context.handle(
-        _remoteIdMeta,
-        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
-      );
-    }
-    if (data.containsKey('sync_status')) {
-      context.handle(
-        _syncStatusMeta,
-        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
-      );
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    if (data.containsKey('is_deleted')) {
-      context.handle(
-        _isDeletedMeta,
-        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
-      );
-    }
     return context;
   }
 
@@ -4357,26 +3281,6 @@ class $WeightLogsTable extends WeightLogs
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
-      remoteId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}remote_id'],
-      ),
-      syncStatus: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}sync_status'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-      isDeleted: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_deleted'],
-      )!,
     );
   }
 
@@ -4391,21 +3295,11 @@ class WeightLog extends DataClass implements Insertable<WeightLog> {
   final DateTime logDate;
   final double weightKg;
   final String? notes;
-  final String? remoteId;
-  final int syncStatus;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final bool isDeleted;
   const WeightLog({
     required this.id,
     required this.logDate,
     required this.weightKg,
     this.notes,
-    this.remoteId,
-    required this.syncStatus,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.isDeleted,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4416,13 +3310,6 @@ class WeightLog extends DataClass implements Insertable<WeightLog> {
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
-    if (!nullToAbsent || remoteId != null) {
-      map['remote_id'] = Variable<String>(remoteId);
-    }
-    map['sync_status'] = Variable<int>(syncStatus);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['is_deleted'] = Variable<bool>(isDeleted);
     return map;
   }
 
@@ -4434,13 +3321,6 @@ class WeightLog extends DataClass implements Insertable<WeightLog> {
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
-      remoteId: remoteId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(remoteId),
-      syncStatus: Value(syncStatus),
-      createdAt: Value(createdAt),
-      updatedAt: Value(updatedAt),
-      isDeleted: Value(isDeleted),
     );
   }
 
@@ -4454,11 +3334,6 @@ class WeightLog extends DataClass implements Insertable<WeightLog> {
       logDate: serializer.fromJson<DateTime>(json['logDate']),
       weightKg: serializer.fromJson<double>(json['weightKg']),
       notes: serializer.fromJson<String?>(json['notes']),
-      remoteId: serializer.fromJson<String?>(json['remoteId']),
-      syncStatus: serializer.fromJson<int>(json['syncStatus']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
     );
   }
   @override
@@ -4469,11 +3344,6 @@ class WeightLog extends DataClass implements Insertable<WeightLog> {
       'logDate': serializer.toJson<DateTime>(logDate),
       'weightKg': serializer.toJson<double>(weightKg),
       'notes': serializer.toJson<String?>(notes),
-      'remoteId': serializer.toJson<String?>(remoteId),
-      'syncStatus': serializer.toJson<int>(syncStatus),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'isDeleted': serializer.toJson<bool>(isDeleted),
     };
   }
 
@@ -4482,21 +3352,11 @@ class WeightLog extends DataClass implements Insertable<WeightLog> {
     DateTime? logDate,
     double? weightKg,
     Value<String?> notes = const Value.absent(),
-    Value<String?> remoteId = const Value.absent(),
-    int? syncStatus,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    bool? isDeleted,
   }) => WeightLog(
     id: id ?? this.id,
     logDate: logDate ?? this.logDate,
     weightKg: weightKg ?? this.weightKg,
     notes: notes.present ? notes.value : this.notes,
-    remoteId: remoteId.present ? remoteId.value : this.remoteId,
-    syncStatus: syncStatus ?? this.syncStatus,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    isDeleted: isDeleted ?? this.isDeleted,
   );
   WeightLog copyWithCompanion(WeightLogsCompanion data) {
     return WeightLog(
@@ -4504,13 +3364,6 @@ class WeightLog extends DataClass implements Insertable<WeightLog> {
       logDate: data.logDate.present ? data.logDate.value : this.logDate,
       weightKg: data.weightKg.present ? data.weightKg.value : this.weightKg,
       notes: data.notes.present ? data.notes.value : this.notes,
-      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
-      syncStatus: data.syncStatus.present
-          ? data.syncStatus.value
-          : this.syncStatus,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
     );
   }
 
@@ -4520,28 +3373,13 @@ class WeightLog extends DataClass implements Insertable<WeightLog> {
           ..write('id: $id, ')
           ..write('logDate: $logDate, ')
           ..write('weightKg: $weightKg, ')
-          ..write('notes: $notes, ')
-          ..write('remoteId: $remoteId, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('isDeleted: $isDeleted')
+          ..write('notes: $notes')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-    id,
-    logDate,
-    weightKg,
-    notes,
-    remoteId,
-    syncStatus,
-    createdAt,
-    updatedAt,
-    isDeleted,
-  );
+  int get hashCode => Object.hash(id, logDate, weightKg, notes);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4549,12 +3387,7 @@ class WeightLog extends DataClass implements Insertable<WeightLog> {
           other.id == this.id &&
           other.logDate == this.logDate &&
           other.weightKg == this.weightKg &&
-          other.notes == this.notes &&
-          other.remoteId == this.remoteId &&
-          other.syncStatus == this.syncStatus &&
-          other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt &&
-          other.isDeleted == this.isDeleted);
+          other.notes == this.notes);
 }
 
 class WeightLogsCompanion extends UpdateCompanion<WeightLog> {
@@ -4562,32 +3395,17 @@ class WeightLogsCompanion extends UpdateCompanion<WeightLog> {
   final Value<DateTime> logDate;
   final Value<double> weightKg;
   final Value<String?> notes;
-  final Value<String?> remoteId;
-  final Value<int> syncStatus;
-  final Value<DateTime> createdAt;
-  final Value<DateTime> updatedAt;
-  final Value<bool> isDeleted;
   const WeightLogsCompanion({
     this.id = const Value.absent(),
     this.logDate = const Value.absent(),
     this.weightKg = const Value.absent(),
     this.notes = const Value.absent(),
-    this.remoteId = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.isDeleted = const Value.absent(),
   });
   WeightLogsCompanion.insert({
     this.id = const Value.absent(),
     required DateTime logDate,
     required double weightKg,
     this.notes = const Value.absent(),
-    this.remoteId = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.isDeleted = const Value.absent(),
   }) : logDate = Value(logDate),
        weightKg = Value(weightKg);
   static Insertable<WeightLog> custom({
@@ -4595,22 +3413,12 @@ class WeightLogsCompanion extends UpdateCompanion<WeightLog> {
     Expression<DateTime>? logDate,
     Expression<double>? weightKg,
     Expression<String>? notes,
-    Expression<String>? remoteId,
-    Expression<int>? syncStatus,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? updatedAt,
-    Expression<bool>? isDeleted,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (logDate != null) 'log_date': logDate,
       if (weightKg != null) 'weight_kg': weightKg,
       if (notes != null) 'notes': notes,
-      if (remoteId != null) 'remote_id': remoteId,
-      if (syncStatus != null) 'sync_status': syncStatus,
-      if (createdAt != null) 'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (isDeleted != null) 'is_deleted': isDeleted,
     });
   }
 
@@ -4619,22 +3427,12 @@ class WeightLogsCompanion extends UpdateCompanion<WeightLog> {
     Value<DateTime>? logDate,
     Value<double>? weightKg,
     Value<String?>? notes,
-    Value<String?>? remoteId,
-    Value<int>? syncStatus,
-    Value<DateTime>? createdAt,
-    Value<DateTime>? updatedAt,
-    Value<bool>? isDeleted,
   }) {
     return WeightLogsCompanion(
       id: id ?? this.id,
       logDate: logDate ?? this.logDate,
       weightKg: weightKg ?? this.weightKg,
       notes: notes ?? this.notes,
-      remoteId: remoteId ?? this.remoteId,
-      syncStatus: syncStatus ?? this.syncStatus,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 
@@ -4653,21 +3451,6 @@ class WeightLogsCompanion extends UpdateCompanion<WeightLog> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
-    if (remoteId.present) {
-      map['remote_id'] = Variable<String>(remoteId.value);
-    }
-    if (syncStatus.present) {
-      map['sync_status'] = Variable<int>(syncStatus.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    if (isDeleted.present) {
-      map['is_deleted'] = Variable<bool>(isDeleted.value);
-    }
     return map;
   }
 
@@ -4677,12 +3460,7 @@ class WeightLogsCompanion extends UpdateCompanion<WeightLog> {
           ..write('id: $id, ')
           ..write('logDate: $logDate, ')
           ..write('weightKg: $weightKg, ')
-          ..write('notes: $notes, ')
-          ..write('remoteId: $remoteId, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('isDeleted: $isDeleted')
+          ..write('notes: $notes')
           ..write(')'))
         .toString();
   }
@@ -4748,68 +3526,6 @@ class $BodyFatLogsTable extends BodyFatLogs
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
-    'remoteId',
-  );
-  @override
-  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
-    'remote_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
-    'syncStatus',
-  );
-  @override
-  late final GeneratedColumn<int> syncStatus = GeneratedColumn<int>(
-    'sync_status',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
-    'isDeleted',
-  );
-  @override
-  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
-    'is_deleted',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_deleted" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -4817,11 +3533,6 @@ class $BodyFatLogsTable extends BodyFatLogs
     bodyFatPercent,
     method,
     notes,
-    remoteId,
-    syncStatus,
-    createdAt,
-    updatedAt,
-    isDeleted,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4869,36 +3580,6 @@ class $BodyFatLogsTable extends BodyFatLogs
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
-    if (data.containsKey('remote_id')) {
-      context.handle(
-        _remoteIdMeta,
-        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
-      );
-    }
-    if (data.containsKey('sync_status')) {
-      context.handle(
-        _syncStatusMeta,
-        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
-      );
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    if (data.containsKey('is_deleted')) {
-      context.handle(
-        _isDeletedMeta,
-        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
-      );
-    }
     return context;
   }
 
@@ -4928,26 +3609,6 @@ class $BodyFatLogsTable extends BodyFatLogs
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
-      remoteId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}remote_id'],
-      ),
-      syncStatus: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}sync_status'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-      isDeleted: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_deleted'],
-      )!,
     );
   }
 
@@ -4963,22 +3624,12 @@ class BodyFatLog extends DataClass implements Insertable<BodyFatLog> {
   final double bodyFatPercent;
   final String method;
   final String? notes;
-  final String? remoteId;
-  final int syncStatus;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final bool isDeleted;
   const BodyFatLog({
     required this.id,
     required this.logDate,
     required this.bodyFatPercent,
     required this.method,
     this.notes,
-    this.remoteId,
-    required this.syncStatus,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.isDeleted,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4990,13 +3641,6 @@ class BodyFatLog extends DataClass implements Insertable<BodyFatLog> {
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
-    if (!nullToAbsent || remoteId != null) {
-      map['remote_id'] = Variable<String>(remoteId);
-    }
-    map['sync_status'] = Variable<int>(syncStatus);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['is_deleted'] = Variable<bool>(isDeleted);
     return map;
   }
 
@@ -5009,13 +3653,6 @@ class BodyFatLog extends DataClass implements Insertable<BodyFatLog> {
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
-      remoteId: remoteId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(remoteId),
-      syncStatus: Value(syncStatus),
-      createdAt: Value(createdAt),
-      updatedAt: Value(updatedAt),
-      isDeleted: Value(isDeleted),
     );
   }
 
@@ -5030,11 +3667,6 @@ class BodyFatLog extends DataClass implements Insertable<BodyFatLog> {
       bodyFatPercent: serializer.fromJson<double>(json['bodyFatPercent']),
       method: serializer.fromJson<String>(json['method']),
       notes: serializer.fromJson<String?>(json['notes']),
-      remoteId: serializer.fromJson<String?>(json['remoteId']),
-      syncStatus: serializer.fromJson<int>(json['syncStatus']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
     );
   }
   @override
@@ -5046,11 +3678,6 @@ class BodyFatLog extends DataClass implements Insertable<BodyFatLog> {
       'bodyFatPercent': serializer.toJson<double>(bodyFatPercent),
       'method': serializer.toJson<String>(method),
       'notes': serializer.toJson<String?>(notes),
-      'remoteId': serializer.toJson<String?>(remoteId),
-      'syncStatus': serializer.toJson<int>(syncStatus),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'isDeleted': serializer.toJson<bool>(isDeleted),
     };
   }
 
@@ -5060,22 +3687,12 @@ class BodyFatLog extends DataClass implements Insertable<BodyFatLog> {
     double? bodyFatPercent,
     String? method,
     Value<String?> notes = const Value.absent(),
-    Value<String?> remoteId = const Value.absent(),
-    int? syncStatus,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    bool? isDeleted,
   }) => BodyFatLog(
     id: id ?? this.id,
     logDate: logDate ?? this.logDate,
     bodyFatPercent: bodyFatPercent ?? this.bodyFatPercent,
     method: method ?? this.method,
     notes: notes.present ? notes.value : this.notes,
-    remoteId: remoteId.present ? remoteId.value : this.remoteId,
-    syncStatus: syncStatus ?? this.syncStatus,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    isDeleted: isDeleted ?? this.isDeleted,
   );
   BodyFatLog copyWithCompanion(BodyFatLogsCompanion data) {
     return BodyFatLog(
@@ -5086,13 +3703,6 @@ class BodyFatLog extends DataClass implements Insertable<BodyFatLog> {
           : this.bodyFatPercent,
       method: data.method.present ? data.method.value : this.method,
       notes: data.notes.present ? data.notes.value : this.notes,
-      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
-      syncStatus: data.syncStatus.present
-          ? data.syncStatus.value
-          : this.syncStatus,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
     );
   }
 
@@ -5103,29 +3713,13 @@ class BodyFatLog extends DataClass implements Insertable<BodyFatLog> {
           ..write('logDate: $logDate, ')
           ..write('bodyFatPercent: $bodyFatPercent, ')
           ..write('method: $method, ')
-          ..write('notes: $notes, ')
-          ..write('remoteId: $remoteId, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('isDeleted: $isDeleted')
+          ..write('notes: $notes')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-    id,
-    logDate,
-    bodyFatPercent,
-    method,
-    notes,
-    remoteId,
-    syncStatus,
-    createdAt,
-    updatedAt,
-    isDeleted,
-  );
+  int get hashCode => Object.hash(id, logDate, bodyFatPercent, method, notes);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -5134,12 +3728,7 @@ class BodyFatLog extends DataClass implements Insertable<BodyFatLog> {
           other.logDate == this.logDate &&
           other.bodyFatPercent == this.bodyFatPercent &&
           other.method == this.method &&
-          other.notes == this.notes &&
-          other.remoteId == this.remoteId &&
-          other.syncStatus == this.syncStatus &&
-          other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt &&
-          other.isDeleted == this.isDeleted);
+          other.notes == this.notes);
 }
 
 class BodyFatLogsCompanion extends UpdateCompanion<BodyFatLog> {
@@ -5148,22 +3737,12 @@ class BodyFatLogsCompanion extends UpdateCompanion<BodyFatLog> {
   final Value<double> bodyFatPercent;
   final Value<String> method;
   final Value<String?> notes;
-  final Value<String?> remoteId;
-  final Value<int> syncStatus;
-  final Value<DateTime> createdAt;
-  final Value<DateTime> updatedAt;
-  final Value<bool> isDeleted;
   const BodyFatLogsCompanion({
     this.id = const Value.absent(),
     this.logDate = const Value.absent(),
     this.bodyFatPercent = const Value.absent(),
     this.method = const Value.absent(),
     this.notes = const Value.absent(),
-    this.remoteId = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.isDeleted = const Value.absent(),
   });
   BodyFatLogsCompanion.insert({
     this.id = const Value.absent(),
@@ -5171,11 +3750,6 @@ class BodyFatLogsCompanion extends UpdateCompanion<BodyFatLog> {
     required double bodyFatPercent,
     this.method = const Value.absent(),
     this.notes = const Value.absent(),
-    this.remoteId = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.isDeleted = const Value.absent(),
   }) : logDate = Value(logDate),
        bodyFatPercent = Value(bodyFatPercent);
   static Insertable<BodyFatLog> custom({
@@ -5184,11 +3758,6 @@ class BodyFatLogsCompanion extends UpdateCompanion<BodyFatLog> {
     Expression<double>? bodyFatPercent,
     Expression<String>? method,
     Expression<String>? notes,
-    Expression<String>? remoteId,
-    Expression<int>? syncStatus,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? updatedAt,
-    Expression<bool>? isDeleted,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -5196,11 +3765,6 @@ class BodyFatLogsCompanion extends UpdateCompanion<BodyFatLog> {
       if (bodyFatPercent != null) 'body_fat_percent': bodyFatPercent,
       if (method != null) 'method': method,
       if (notes != null) 'notes': notes,
-      if (remoteId != null) 'remote_id': remoteId,
-      if (syncStatus != null) 'sync_status': syncStatus,
-      if (createdAt != null) 'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (isDeleted != null) 'is_deleted': isDeleted,
     });
   }
 
@@ -5210,11 +3774,6 @@ class BodyFatLogsCompanion extends UpdateCompanion<BodyFatLog> {
     Value<double>? bodyFatPercent,
     Value<String>? method,
     Value<String?>? notes,
-    Value<String?>? remoteId,
-    Value<int>? syncStatus,
-    Value<DateTime>? createdAt,
-    Value<DateTime>? updatedAt,
-    Value<bool>? isDeleted,
   }) {
     return BodyFatLogsCompanion(
       id: id ?? this.id,
@@ -5222,11 +3781,6 @@ class BodyFatLogsCompanion extends UpdateCompanion<BodyFatLog> {
       bodyFatPercent: bodyFatPercent ?? this.bodyFatPercent,
       method: method ?? this.method,
       notes: notes ?? this.notes,
-      remoteId: remoteId ?? this.remoteId,
-      syncStatus: syncStatus ?? this.syncStatus,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 
@@ -5248,21 +3802,6 @@ class BodyFatLogsCompanion extends UpdateCompanion<BodyFatLog> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
-    if (remoteId.present) {
-      map['remote_id'] = Variable<String>(remoteId.value);
-    }
-    if (syncStatus.present) {
-      map['sync_status'] = Variable<int>(syncStatus.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    if (isDeleted.present) {
-      map['is_deleted'] = Variable<bool>(isDeleted.value);
-    }
     return map;
   }
 
@@ -5273,12 +3812,7 @@ class BodyFatLogsCompanion extends UpdateCompanion<BodyFatLog> {
           ..write('logDate: $logDate, ')
           ..write('bodyFatPercent: $bodyFatPercent, ')
           ..write('method: $method, ')
-          ..write('notes: $notes, ')
-          ..write('remoteId: $remoteId, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('isDeleted: $isDeleted')
+          ..write('notes: $notes')
           ..write(')'))
         .toString();
   }
@@ -5712,68 +4246,6 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
       'REFERENCES food_logs (id)',
     ),
   );
-  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
-    'remoteId',
-  );
-  @override
-  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
-    'remote_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
-    'syncStatus',
-  );
-  @override
-  late final GeneratedColumn<int> syncStatus = GeneratedColumn<int>(
-    'sync_status',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
-    'isDeleted',
-  );
-  @override
-  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
-    'is_deleted',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_deleted" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -5782,11 +4254,6 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     amount,
     description,
     linkedFoodLogId,
-    remoteId,
-    syncStatus,
-    createdAt,
-    updatedAt,
-    isDeleted,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -5845,36 +4312,6 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         ),
       );
     }
-    if (data.containsKey('remote_id')) {
-      context.handle(
-        _remoteIdMeta,
-        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
-      );
-    }
-    if (data.containsKey('sync_status')) {
-      context.handle(
-        _syncStatusMeta,
-        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
-      );
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    if (data.containsKey('is_deleted')) {
-      context.handle(
-        _isDeletedMeta,
-        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
-      );
-    }
     return context;
   }
 
@@ -5908,26 +4345,6 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         DriftSqlType.int,
         data['${effectivePrefix}linked_food_log_id'],
       ),
-      remoteId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}remote_id'],
-      ),
-      syncStatus: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}sync_status'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-      isDeleted: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_deleted'],
-      )!,
     );
   }
 
@@ -5944,11 +4361,6 @@ class Expense extends DataClass implements Insertable<Expense> {
   final double amount;
   final String? description;
   final int? linkedFoodLogId;
-  final String? remoteId;
-  final int syncStatus;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final bool isDeleted;
   const Expense({
     required this.id,
     required this.logDate,
@@ -5956,11 +4368,6 @@ class Expense extends DataClass implements Insertable<Expense> {
     required this.amount,
     this.description,
     this.linkedFoodLogId,
-    this.remoteId,
-    required this.syncStatus,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.isDeleted,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -5975,13 +4382,6 @@ class Expense extends DataClass implements Insertable<Expense> {
     if (!nullToAbsent || linkedFoodLogId != null) {
       map['linked_food_log_id'] = Variable<int>(linkedFoodLogId);
     }
-    if (!nullToAbsent || remoteId != null) {
-      map['remote_id'] = Variable<String>(remoteId);
-    }
-    map['sync_status'] = Variable<int>(syncStatus);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['is_deleted'] = Variable<bool>(isDeleted);
     return map;
   }
 
@@ -5997,13 +4397,6 @@ class Expense extends DataClass implements Insertable<Expense> {
       linkedFoodLogId: linkedFoodLogId == null && nullToAbsent
           ? const Value.absent()
           : Value(linkedFoodLogId),
-      remoteId: remoteId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(remoteId),
-      syncStatus: Value(syncStatus),
-      createdAt: Value(createdAt),
-      updatedAt: Value(updatedAt),
-      isDeleted: Value(isDeleted),
     );
   }
 
@@ -6019,11 +4412,6 @@ class Expense extends DataClass implements Insertable<Expense> {
       amount: serializer.fromJson<double>(json['amount']),
       description: serializer.fromJson<String?>(json['description']),
       linkedFoodLogId: serializer.fromJson<int?>(json['linkedFoodLogId']),
-      remoteId: serializer.fromJson<String?>(json['remoteId']),
-      syncStatus: serializer.fromJson<int>(json['syncStatus']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
     );
   }
   @override
@@ -6036,11 +4424,6 @@ class Expense extends DataClass implements Insertable<Expense> {
       'amount': serializer.toJson<double>(amount),
       'description': serializer.toJson<String?>(description),
       'linkedFoodLogId': serializer.toJson<int?>(linkedFoodLogId),
-      'remoteId': serializer.toJson<String?>(remoteId),
-      'syncStatus': serializer.toJson<int>(syncStatus),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'isDeleted': serializer.toJson<bool>(isDeleted),
     };
   }
 
@@ -6051,11 +4434,6 @@ class Expense extends DataClass implements Insertable<Expense> {
     double? amount,
     Value<String?> description = const Value.absent(),
     Value<int?> linkedFoodLogId = const Value.absent(),
-    Value<String?> remoteId = const Value.absent(),
-    int? syncStatus,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    bool? isDeleted,
   }) => Expense(
     id: id ?? this.id,
     logDate: logDate ?? this.logDate,
@@ -6065,11 +4443,6 @@ class Expense extends DataClass implements Insertable<Expense> {
     linkedFoodLogId: linkedFoodLogId.present
         ? linkedFoodLogId.value
         : this.linkedFoodLogId,
-    remoteId: remoteId.present ? remoteId.value : this.remoteId,
-    syncStatus: syncStatus ?? this.syncStatus,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    isDeleted: isDeleted ?? this.isDeleted,
   );
   Expense copyWithCompanion(ExpensesCompanion data) {
     return Expense(
@@ -6085,13 +4458,6 @@ class Expense extends DataClass implements Insertable<Expense> {
       linkedFoodLogId: data.linkedFoodLogId.present
           ? data.linkedFoodLogId.value
           : this.linkedFoodLogId,
-      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
-      syncStatus: data.syncStatus.present
-          ? data.syncStatus.value
-          : this.syncStatus,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
     );
   }
 
@@ -6103,12 +4469,7 @@ class Expense extends DataClass implements Insertable<Expense> {
           ..write('categoryId: $categoryId, ')
           ..write('amount: $amount, ')
           ..write('description: $description, ')
-          ..write('linkedFoodLogId: $linkedFoodLogId, ')
-          ..write('remoteId: $remoteId, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('isDeleted: $isDeleted')
+          ..write('linkedFoodLogId: $linkedFoodLogId')
           ..write(')'))
         .toString();
   }
@@ -6121,11 +4482,6 @@ class Expense extends DataClass implements Insertable<Expense> {
     amount,
     description,
     linkedFoodLogId,
-    remoteId,
-    syncStatus,
-    createdAt,
-    updatedAt,
-    isDeleted,
   );
   @override
   bool operator ==(Object other) =>
@@ -6136,12 +4492,7 @@ class Expense extends DataClass implements Insertable<Expense> {
           other.categoryId == this.categoryId &&
           other.amount == this.amount &&
           other.description == this.description &&
-          other.linkedFoodLogId == this.linkedFoodLogId &&
-          other.remoteId == this.remoteId &&
-          other.syncStatus == this.syncStatus &&
-          other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt &&
-          other.isDeleted == this.isDeleted);
+          other.linkedFoodLogId == this.linkedFoodLogId);
 }
 
 class ExpensesCompanion extends UpdateCompanion<Expense> {
@@ -6151,11 +4502,6 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   final Value<double> amount;
   final Value<String?> description;
   final Value<int?> linkedFoodLogId;
-  final Value<String?> remoteId;
-  final Value<int> syncStatus;
-  final Value<DateTime> createdAt;
-  final Value<DateTime> updatedAt;
-  final Value<bool> isDeleted;
   const ExpensesCompanion({
     this.id = const Value.absent(),
     this.logDate = const Value.absent(),
@@ -6163,11 +4509,6 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     this.amount = const Value.absent(),
     this.description = const Value.absent(),
     this.linkedFoodLogId = const Value.absent(),
-    this.remoteId = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.isDeleted = const Value.absent(),
   });
   ExpensesCompanion.insert({
     this.id = const Value.absent(),
@@ -6176,11 +4517,6 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     required double amount,
     this.description = const Value.absent(),
     this.linkedFoodLogId = const Value.absent(),
-    this.remoteId = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.isDeleted = const Value.absent(),
   }) : logDate = Value(logDate),
        categoryId = Value(categoryId),
        amount = Value(amount);
@@ -6191,11 +4527,6 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     Expression<double>? amount,
     Expression<String>? description,
     Expression<int>? linkedFoodLogId,
-    Expression<String>? remoteId,
-    Expression<int>? syncStatus,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? updatedAt,
-    Expression<bool>? isDeleted,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -6204,11 +4535,6 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
       if (amount != null) 'amount': amount,
       if (description != null) 'description': description,
       if (linkedFoodLogId != null) 'linked_food_log_id': linkedFoodLogId,
-      if (remoteId != null) 'remote_id': remoteId,
-      if (syncStatus != null) 'sync_status': syncStatus,
-      if (createdAt != null) 'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (isDeleted != null) 'is_deleted': isDeleted,
     });
   }
 
@@ -6219,11 +4545,6 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     Value<double>? amount,
     Value<String?>? description,
     Value<int?>? linkedFoodLogId,
-    Value<String?>? remoteId,
-    Value<int>? syncStatus,
-    Value<DateTime>? createdAt,
-    Value<DateTime>? updatedAt,
-    Value<bool>? isDeleted,
   }) {
     return ExpensesCompanion(
       id: id ?? this.id,
@@ -6232,11 +4553,6 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
       amount: amount ?? this.amount,
       description: description ?? this.description,
       linkedFoodLogId: linkedFoodLogId ?? this.linkedFoodLogId,
-      remoteId: remoteId ?? this.remoteId,
-      syncStatus: syncStatus ?? this.syncStatus,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 
@@ -6261,21 +4577,6 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     if (linkedFoodLogId.present) {
       map['linked_food_log_id'] = Variable<int>(linkedFoodLogId.value);
     }
-    if (remoteId.present) {
-      map['remote_id'] = Variable<String>(remoteId.value);
-    }
-    if (syncStatus.present) {
-      map['sync_status'] = Variable<int>(syncStatus.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    if (isDeleted.present) {
-      map['is_deleted'] = Variable<bool>(isDeleted.value);
-    }
     return map;
   }
 
@@ -6287,473 +4588,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
           ..write('categoryId: $categoryId, ')
           ..write('amount: $amount, ')
           ..write('description: $description, ')
-          ..write('linkedFoodLogId: $linkedFoodLogId, ')
-          ..write('remoteId: $remoteId, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('isDeleted: $isDeleted')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $SyncQueueTable extends SyncQueue
-    with TableInfo<$SyncQueueTable, SyncQueueData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $SyncQueueTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _targetTableMeta = const VerificationMeta(
-    'targetTable',
-  );
-  @override
-  late final GeneratedColumn<String> targetTable = GeneratedColumn<String>(
-    'target_table',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _recordIdMeta = const VerificationMeta(
-    'recordId',
-  );
-  @override
-  late final GeneratedColumn<int> recordId = GeneratedColumn<int>(
-    'record_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _actionMeta = const VerificationMeta('action');
-  @override
-  late final GeneratedColumn<String> action = GeneratedColumn<String>(
-    'action',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _queuedAtMeta = const VerificationMeta(
-    'queuedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> queuedAt = GeneratedColumn<DateTime>(
-    'queued_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _retryCountMeta = const VerificationMeta(
-    'retryCount',
-  );
-  @override
-  late final GeneratedColumn<int> retryCount = GeneratedColumn<int>(
-    'retry_count',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _errorMessageMeta = const VerificationMeta(
-    'errorMessage',
-  );
-  @override
-  late final GeneratedColumn<String> errorMessage = GeneratedColumn<String>(
-    'error_message',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    targetTable,
-    recordId,
-    action,
-    queuedAt,
-    retryCount,
-    errorMessage,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'sync_queue';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<SyncQueueData> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('target_table')) {
-      context.handle(
-        _targetTableMeta,
-        targetTable.isAcceptableOrUnknown(
-          data['target_table']!,
-          _targetTableMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_targetTableMeta);
-    }
-    if (data.containsKey('record_id')) {
-      context.handle(
-        _recordIdMeta,
-        recordId.isAcceptableOrUnknown(data['record_id']!, _recordIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_recordIdMeta);
-    }
-    if (data.containsKey('action')) {
-      context.handle(
-        _actionMeta,
-        action.isAcceptableOrUnknown(data['action']!, _actionMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_actionMeta);
-    }
-    if (data.containsKey('queued_at')) {
-      context.handle(
-        _queuedAtMeta,
-        queuedAt.isAcceptableOrUnknown(data['queued_at']!, _queuedAtMeta),
-      );
-    }
-    if (data.containsKey('retry_count')) {
-      context.handle(
-        _retryCountMeta,
-        retryCount.isAcceptableOrUnknown(data['retry_count']!, _retryCountMeta),
-      );
-    }
-    if (data.containsKey('error_message')) {
-      context.handle(
-        _errorMessageMeta,
-        errorMessage.isAcceptableOrUnknown(
-          data['error_message']!,
-          _errorMessageMeta,
-        ),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  SyncQueueData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return SyncQueueData(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      targetTable: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}target_table'],
-      )!,
-      recordId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}record_id'],
-      )!,
-      action: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}action'],
-      )!,
-      queuedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}queued_at'],
-      )!,
-      retryCount: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}retry_count'],
-      )!,
-      errorMessage: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}error_message'],
-      ),
-    );
-  }
-
-  @override
-  $SyncQueueTable createAlias(String alias) {
-    return $SyncQueueTable(attachedDatabase, alias);
-  }
-}
-
-class SyncQueueData extends DataClass implements Insertable<SyncQueueData> {
-  final int id;
-  final String targetTable;
-  final int recordId;
-  final String action;
-  final DateTime queuedAt;
-  final int retryCount;
-  final String? errorMessage;
-  const SyncQueueData({
-    required this.id,
-    required this.targetTable,
-    required this.recordId,
-    required this.action,
-    required this.queuedAt,
-    required this.retryCount,
-    this.errorMessage,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['target_table'] = Variable<String>(targetTable);
-    map['record_id'] = Variable<int>(recordId);
-    map['action'] = Variable<String>(action);
-    map['queued_at'] = Variable<DateTime>(queuedAt);
-    map['retry_count'] = Variable<int>(retryCount);
-    if (!nullToAbsent || errorMessage != null) {
-      map['error_message'] = Variable<String>(errorMessage);
-    }
-    return map;
-  }
-
-  SyncQueueCompanion toCompanion(bool nullToAbsent) {
-    return SyncQueueCompanion(
-      id: Value(id),
-      targetTable: Value(targetTable),
-      recordId: Value(recordId),
-      action: Value(action),
-      queuedAt: Value(queuedAt),
-      retryCount: Value(retryCount),
-      errorMessage: errorMessage == null && nullToAbsent
-          ? const Value.absent()
-          : Value(errorMessage),
-    );
-  }
-
-  factory SyncQueueData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return SyncQueueData(
-      id: serializer.fromJson<int>(json['id']),
-      targetTable: serializer.fromJson<String>(json['targetTable']),
-      recordId: serializer.fromJson<int>(json['recordId']),
-      action: serializer.fromJson<String>(json['action']),
-      queuedAt: serializer.fromJson<DateTime>(json['queuedAt']),
-      retryCount: serializer.fromJson<int>(json['retryCount']),
-      errorMessage: serializer.fromJson<String?>(json['errorMessage']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'targetTable': serializer.toJson<String>(targetTable),
-      'recordId': serializer.toJson<int>(recordId),
-      'action': serializer.toJson<String>(action),
-      'queuedAt': serializer.toJson<DateTime>(queuedAt),
-      'retryCount': serializer.toJson<int>(retryCount),
-      'errorMessage': serializer.toJson<String?>(errorMessage),
-    };
-  }
-
-  SyncQueueData copyWith({
-    int? id,
-    String? targetTable,
-    int? recordId,
-    String? action,
-    DateTime? queuedAt,
-    int? retryCount,
-    Value<String?> errorMessage = const Value.absent(),
-  }) => SyncQueueData(
-    id: id ?? this.id,
-    targetTable: targetTable ?? this.targetTable,
-    recordId: recordId ?? this.recordId,
-    action: action ?? this.action,
-    queuedAt: queuedAt ?? this.queuedAt,
-    retryCount: retryCount ?? this.retryCount,
-    errorMessage: errorMessage.present ? errorMessage.value : this.errorMessage,
-  );
-  SyncQueueData copyWithCompanion(SyncQueueCompanion data) {
-    return SyncQueueData(
-      id: data.id.present ? data.id.value : this.id,
-      targetTable: data.targetTable.present
-          ? data.targetTable.value
-          : this.targetTable,
-      recordId: data.recordId.present ? data.recordId.value : this.recordId,
-      action: data.action.present ? data.action.value : this.action,
-      queuedAt: data.queuedAt.present ? data.queuedAt.value : this.queuedAt,
-      retryCount: data.retryCount.present
-          ? data.retryCount.value
-          : this.retryCount,
-      errorMessage: data.errorMessage.present
-          ? data.errorMessage.value
-          : this.errorMessage,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('SyncQueueData(')
-          ..write('id: $id, ')
-          ..write('targetTable: $targetTable, ')
-          ..write('recordId: $recordId, ')
-          ..write('action: $action, ')
-          ..write('queuedAt: $queuedAt, ')
-          ..write('retryCount: $retryCount, ')
-          ..write('errorMessage: $errorMessage')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    id,
-    targetTable,
-    recordId,
-    action,
-    queuedAt,
-    retryCount,
-    errorMessage,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is SyncQueueData &&
-          other.id == this.id &&
-          other.targetTable == this.targetTable &&
-          other.recordId == this.recordId &&
-          other.action == this.action &&
-          other.queuedAt == this.queuedAt &&
-          other.retryCount == this.retryCount &&
-          other.errorMessage == this.errorMessage);
-}
-
-class SyncQueueCompanion extends UpdateCompanion<SyncQueueData> {
-  final Value<int> id;
-  final Value<String> targetTable;
-  final Value<int> recordId;
-  final Value<String> action;
-  final Value<DateTime> queuedAt;
-  final Value<int> retryCount;
-  final Value<String?> errorMessage;
-  const SyncQueueCompanion({
-    this.id = const Value.absent(),
-    this.targetTable = const Value.absent(),
-    this.recordId = const Value.absent(),
-    this.action = const Value.absent(),
-    this.queuedAt = const Value.absent(),
-    this.retryCount = const Value.absent(),
-    this.errorMessage = const Value.absent(),
-  });
-  SyncQueueCompanion.insert({
-    this.id = const Value.absent(),
-    required String targetTable,
-    required int recordId,
-    required String action,
-    this.queuedAt = const Value.absent(),
-    this.retryCount = const Value.absent(),
-    this.errorMessage = const Value.absent(),
-  }) : targetTable = Value(targetTable),
-       recordId = Value(recordId),
-       action = Value(action);
-  static Insertable<SyncQueueData> custom({
-    Expression<int>? id,
-    Expression<String>? targetTable,
-    Expression<int>? recordId,
-    Expression<String>? action,
-    Expression<DateTime>? queuedAt,
-    Expression<int>? retryCount,
-    Expression<String>? errorMessage,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (targetTable != null) 'target_table': targetTable,
-      if (recordId != null) 'record_id': recordId,
-      if (action != null) 'action': action,
-      if (queuedAt != null) 'queued_at': queuedAt,
-      if (retryCount != null) 'retry_count': retryCount,
-      if (errorMessage != null) 'error_message': errorMessage,
-    });
-  }
-
-  SyncQueueCompanion copyWith({
-    Value<int>? id,
-    Value<String>? targetTable,
-    Value<int>? recordId,
-    Value<String>? action,
-    Value<DateTime>? queuedAt,
-    Value<int>? retryCount,
-    Value<String?>? errorMessage,
-  }) {
-    return SyncQueueCompanion(
-      id: id ?? this.id,
-      targetTable: targetTable ?? this.targetTable,
-      recordId: recordId ?? this.recordId,
-      action: action ?? this.action,
-      queuedAt: queuedAt ?? this.queuedAt,
-      retryCount: retryCount ?? this.retryCount,
-      errorMessage: errorMessage ?? this.errorMessage,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (targetTable.present) {
-      map['target_table'] = Variable<String>(targetTable.value);
-    }
-    if (recordId.present) {
-      map['record_id'] = Variable<int>(recordId.value);
-    }
-    if (action.present) {
-      map['action'] = Variable<String>(action.value);
-    }
-    if (queuedAt.present) {
-      map['queued_at'] = Variable<DateTime>(queuedAt.value);
-    }
-    if (retryCount.present) {
-      map['retry_count'] = Variable<int>(retryCount.value);
-    }
-    if (errorMessage.present) {
-      map['error_message'] = Variable<String>(errorMessage.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('SyncQueueCompanion(')
-          ..write('id: $id, ')
-          ..write('targetTable: $targetTable, ')
-          ..write('recordId: $recordId, ')
-          ..write('action: $action, ')
-          ..write('queuedAt: $queuedAt, ')
-          ..write('retryCount: $retryCount, ')
-          ..write('errorMessage: $errorMessage')
+          ..write('linkedFoodLogId: $linkedFoodLogId')
           ..write(')'))
         .toString();
   }
@@ -6774,7 +4609,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ExpenseCategoriesTable expenseCategories =
       $ExpenseCategoriesTable(this);
   late final $ExpensesTable expenses = $ExpensesTable(this);
-  late final $SyncQueueTable syncQueue = $SyncQueueTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6791,7 +4625,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     bodyFatLogs,
     expenseCategories,
     expenses,
-    syncQueue,
   ];
 }
 
@@ -7127,11 +4960,6 @@ typedef $$ExerciseLogsTableCreateCompanionBuilder =
       Value<int?> durationMinutes,
       Value<double?> distanceKm,
       Value<String?> notes,
-      Value<String?> remoteId,
-      Value<int> syncStatus,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<bool> isDeleted,
     });
 typedef $$ExerciseLogsTableUpdateCompanionBuilder =
     ExerciseLogsCompanion Function({
@@ -7144,11 +4972,6 @@ typedef $$ExerciseLogsTableUpdateCompanionBuilder =
       Value<int?> durationMinutes,
       Value<double?> distanceKm,
       Value<String?> notes,
-      Value<String?> remoteId,
-      Value<int> syncStatus,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<bool> isDeleted,
     });
 
 final class $$ExerciseLogsTableReferences
@@ -7221,31 +5044,6 @@ class $$ExerciseLogsTableFilterComposer
 
   ColumnFilters<String> get notes => $composableBuilder(
     column: $table.notes,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get remoteId => $composableBuilder(
-    column: $table.remoteId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get isDeleted => $composableBuilder(
-    column: $table.isDeleted,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7322,31 +5120,6 @@ class $$ExerciseLogsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get remoteId => $composableBuilder(
-    column: $table.remoteId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get isDeleted => $composableBuilder(
-    column: $table.isDeleted,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   $$ExercisesTableOrderingComposer get exerciseId {
     final $$ExercisesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -7407,23 +5180,6 @@ class $$ExerciseLogsTableAnnotationComposer
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
-
-  GeneratedColumn<String> get remoteId =>
-      $composableBuilder(column: $table.remoteId, builder: (column) => column);
-
-  GeneratedColumn<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<bool> get isDeleted =>
-      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
 
   $$ExercisesTableAnnotationComposer get exerciseId {
     final $$ExercisesTableAnnotationComposer composer = $composerBuilder(
@@ -7486,11 +5242,6 @@ class $$ExerciseLogsTableTableManager
                 Value<int?> durationMinutes = const Value.absent(),
                 Value<double?> distanceKm = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
-                Value<String?> remoteId = const Value.absent(),
-                Value<int> syncStatus = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<bool> isDeleted = const Value.absent(),
               }) => ExerciseLogsCompanion(
                 id: id,
                 logDate: logDate,
@@ -7501,11 +5252,6 @@ class $$ExerciseLogsTableTableManager
                 durationMinutes: durationMinutes,
                 distanceKm: distanceKm,
                 notes: notes,
-                remoteId: remoteId,
-                syncStatus: syncStatus,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                isDeleted: isDeleted,
               ),
           createCompanionCallback:
               ({
@@ -7518,11 +5264,6 @@ class $$ExerciseLogsTableTableManager
                 Value<int?> durationMinutes = const Value.absent(),
                 Value<double?> distanceKm = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
-                Value<String?> remoteId = const Value.absent(),
-                Value<int> syncStatus = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<bool> isDeleted = const Value.absent(),
               }) => ExerciseLogsCompanion.insert(
                 id: id,
                 logDate: logDate,
@@ -7533,11 +5274,6 @@ class $$ExerciseLogsTableTableManager
                 durationMinutes: durationMinutes,
                 distanceKm: distanceKm,
                 notes: notes,
-                remoteId: remoteId,
-                syncStatus: syncStatus,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                isDeleted: isDeleted,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -8092,11 +5828,6 @@ typedef $$FoodLogsTableCreateCompanionBuilder =
       required int foodId,
       Value<double> servings,
       required String mealType,
-      Value<String?> remoteId,
-      Value<int> syncStatus,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<bool> isDeleted,
     });
 typedef $$FoodLogsTableUpdateCompanionBuilder =
     FoodLogsCompanion Function({
@@ -8105,11 +5836,6 @@ typedef $$FoodLogsTableUpdateCompanionBuilder =
       Value<int> foodId,
       Value<double> servings,
       Value<String> mealType,
-      Value<String?> remoteId,
-      Value<int> syncStatus,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<bool> isDeleted,
     });
 
 final class $$FoodLogsTableReferences
@@ -8183,31 +5909,6 @@ class $$FoodLogsTableFilterComposer
 
   ColumnFilters<String> get mealType => $composableBuilder(
     column: $table.mealType,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get remoteId => $composableBuilder(
-    column: $table.remoteId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get isDeleted => $composableBuilder(
-    column: $table.isDeleted,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8289,31 +5990,6 @@ class $$FoodLogsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get remoteId => $composableBuilder(
-    column: $table.remoteId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get isDeleted => $composableBuilder(
-    column: $table.isDeleted,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   $$FoodsTableOrderingComposer get foodId {
     final $$FoodsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -8358,23 +6034,6 @@ class $$FoodLogsTableAnnotationComposer
 
   GeneratedColumn<String> get mealType =>
       $composableBuilder(column: $table.mealType, builder: (column) => column);
-
-  GeneratedColumn<String> get remoteId =>
-      $composableBuilder(column: $table.remoteId, builder: (column) => column);
-
-  GeneratedColumn<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<bool> get isDeleted =>
-      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
 
   $$FoodsTableAnnotationComposer get foodId {
     final $$FoodsTableAnnotationComposer composer = $composerBuilder(
@@ -8458,22 +6117,12 @@ class $$FoodLogsTableTableManager
                 Value<int> foodId = const Value.absent(),
                 Value<double> servings = const Value.absent(),
                 Value<String> mealType = const Value.absent(),
-                Value<String?> remoteId = const Value.absent(),
-                Value<int> syncStatus = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<bool> isDeleted = const Value.absent(),
               }) => FoodLogsCompanion(
                 id: id,
                 logDate: logDate,
                 foodId: foodId,
                 servings: servings,
                 mealType: mealType,
-                remoteId: remoteId,
-                syncStatus: syncStatus,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                isDeleted: isDeleted,
               ),
           createCompanionCallback:
               ({
@@ -8482,22 +6131,12 @@ class $$FoodLogsTableTableManager
                 required int foodId,
                 Value<double> servings = const Value.absent(),
                 required String mealType,
-                Value<String?> remoteId = const Value.absent(),
-                Value<int> syncStatus = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<bool> isDeleted = const Value.absent(),
               }) => FoodLogsCompanion.insert(
                 id: id,
                 logDate: logDate,
                 foodId: foodId,
                 servings: servings,
                 mealType: mealType,
-                remoteId: remoteId,
-                syncStatus: syncStatus,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                isDeleted: isDeleted,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -8871,11 +6510,6 @@ typedef $$SupplementLogsTableCreateCompanionBuilder =
       required DateTime logDate,
       required int supplementId,
       required double dosage,
-      Value<String?> remoteId,
-      Value<int> syncStatus,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<bool> isDeleted,
     });
 typedef $$SupplementLogsTableUpdateCompanionBuilder =
     SupplementLogsCompanion Function({
@@ -8883,11 +6517,6 @@ typedef $$SupplementLogsTableUpdateCompanionBuilder =
       Value<DateTime> logDate,
       Value<int> supplementId,
       Value<double> dosage,
-      Value<String?> remoteId,
-      Value<int> syncStatus,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<bool> isDeleted,
     });
 
 final class $$SupplementLogsTableReferences
@@ -8942,31 +6571,6 @@ class $$SupplementLogsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get remoteId => $composableBuilder(
-    column: $table.remoteId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get isDeleted => $composableBuilder(
-    column: $table.isDeleted,
-    builder: (column) => ColumnFilters(column),
-  );
-
   $$SupplementsTableFilterComposer get supplementId {
     final $$SupplementsTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -9015,31 +6619,6 @@ class $$SupplementLogsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get remoteId => $composableBuilder(
-    column: $table.remoteId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get isDeleted => $composableBuilder(
-    column: $table.isDeleted,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   $$SupplementsTableOrderingComposer get supplementId {
     final $$SupplementsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -9081,23 +6660,6 @@ class $$SupplementLogsTableAnnotationComposer
 
   GeneratedColumn<double> get dosage =>
       $composableBuilder(column: $table.dosage, builder: (column) => column);
-
-  GeneratedColumn<String> get remoteId =>
-      $composableBuilder(column: $table.remoteId, builder: (column) => column);
-
-  GeneratedColumn<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<bool> get isDeleted =>
-      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
 
   $$SupplementsTableAnnotationComposer get supplementId {
     final $$SupplementsTableAnnotationComposer composer = $composerBuilder(
@@ -9157,21 +6719,11 @@ class $$SupplementLogsTableTableManager
                 Value<DateTime> logDate = const Value.absent(),
                 Value<int> supplementId = const Value.absent(),
                 Value<double> dosage = const Value.absent(),
-                Value<String?> remoteId = const Value.absent(),
-                Value<int> syncStatus = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<bool> isDeleted = const Value.absent(),
               }) => SupplementLogsCompanion(
                 id: id,
                 logDate: logDate,
                 supplementId: supplementId,
                 dosage: dosage,
-                remoteId: remoteId,
-                syncStatus: syncStatus,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                isDeleted: isDeleted,
               ),
           createCompanionCallback:
               ({
@@ -9179,21 +6731,11 @@ class $$SupplementLogsTableTableManager
                 required DateTime logDate,
                 required int supplementId,
                 required double dosage,
-                Value<String?> remoteId = const Value.absent(),
-                Value<int> syncStatus = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<bool> isDeleted = const Value.absent(),
               }) => SupplementLogsCompanion.insert(
                 id: id,
                 logDate: logDate,
                 supplementId: supplementId,
                 dosage: dosage,
-                remoteId: remoteId,
-                syncStatus: syncStatus,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                isDeleted: isDeleted,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -9271,11 +6813,6 @@ typedef $$AlcoholLogsTableCreateCompanionBuilder =
       required double units,
       required double calories,
       Value<double?> volumeMl,
-      Value<String?> remoteId,
-      Value<int> syncStatus,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<bool> isDeleted,
     });
 typedef $$AlcoholLogsTableUpdateCompanionBuilder =
     AlcoholLogsCompanion Function({
@@ -9285,11 +6822,6 @@ typedef $$AlcoholLogsTableUpdateCompanionBuilder =
       Value<double> units,
       Value<double> calories,
       Value<double?> volumeMl,
-      Value<String?> remoteId,
-      Value<int> syncStatus,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<bool> isDeleted,
     });
 
 class $$AlcoholLogsTableFilterComposer
@@ -9328,31 +6860,6 @@ class $$AlcoholLogsTableFilterComposer
 
   ColumnFilters<double> get volumeMl => $composableBuilder(
     column: $table.volumeMl,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get remoteId => $composableBuilder(
-    column: $table.remoteId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get isDeleted => $composableBuilder(
-    column: $table.isDeleted,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -9395,31 +6902,6 @@ class $$AlcoholLogsTableOrderingComposer
     column: $table.volumeMl,
     builder: (column) => ColumnOrderings(column),
   );
-
-  ColumnOrderings<String> get remoteId => $composableBuilder(
-    column: $table.remoteId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get isDeleted => $composableBuilder(
-    column: $table.isDeleted,
-    builder: (column) => ColumnOrderings(column),
-  );
 }
 
 class $$AlcoholLogsTableAnnotationComposer
@@ -9448,23 +6930,6 @@ class $$AlcoholLogsTableAnnotationComposer
 
   GeneratedColumn<double> get volumeMl =>
       $composableBuilder(column: $table.volumeMl, builder: (column) => column);
-
-  GeneratedColumn<String> get remoteId =>
-      $composableBuilder(column: $table.remoteId, builder: (column) => column);
-
-  GeneratedColumn<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<bool> get isDeleted =>
-      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
 }
 
 class $$AlcoholLogsTableTableManager
@@ -9504,11 +6969,6 @@ class $$AlcoholLogsTableTableManager
                 Value<double> units = const Value.absent(),
                 Value<double> calories = const Value.absent(),
                 Value<double?> volumeMl = const Value.absent(),
-                Value<String?> remoteId = const Value.absent(),
-                Value<int> syncStatus = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<bool> isDeleted = const Value.absent(),
               }) => AlcoholLogsCompanion(
                 id: id,
                 logDate: logDate,
@@ -9516,11 +6976,6 @@ class $$AlcoholLogsTableTableManager
                 units: units,
                 calories: calories,
                 volumeMl: volumeMl,
-                remoteId: remoteId,
-                syncStatus: syncStatus,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                isDeleted: isDeleted,
               ),
           createCompanionCallback:
               ({
@@ -9530,11 +6985,6 @@ class $$AlcoholLogsTableTableManager
                 required double units,
                 required double calories,
                 Value<double?> volumeMl = const Value.absent(),
-                Value<String?> remoteId = const Value.absent(),
-                Value<int> syncStatus = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<bool> isDeleted = const Value.absent(),
               }) => AlcoholLogsCompanion.insert(
                 id: id,
                 logDate: logDate,
@@ -9542,11 +6992,6 @@ class $$AlcoholLogsTableTableManager
                 units: units,
                 calories: calories,
                 volumeMl: volumeMl,
-                remoteId: remoteId,
-                syncStatus: syncStatus,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                isDeleted: isDeleted,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -9579,11 +7024,6 @@ typedef $$WeightLogsTableCreateCompanionBuilder =
       required DateTime logDate,
       required double weightKg,
       Value<String?> notes,
-      Value<String?> remoteId,
-      Value<int> syncStatus,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<bool> isDeleted,
     });
 typedef $$WeightLogsTableUpdateCompanionBuilder =
     WeightLogsCompanion Function({
@@ -9591,11 +7031,6 @@ typedef $$WeightLogsTableUpdateCompanionBuilder =
       Value<DateTime> logDate,
       Value<double> weightKg,
       Value<String?> notes,
-      Value<String?> remoteId,
-      Value<int> syncStatus,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<bool> isDeleted,
     });
 
 class $$WeightLogsTableFilterComposer
@@ -9624,31 +7059,6 @@ class $$WeightLogsTableFilterComposer
 
   ColumnFilters<String> get notes => $composableBuilder(
     column: $table.notes,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get remoteId => $composableBuilder(
-    column: $table.remoteId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get isDeleted => $composableBuilder(
-    column: $table.isDeleted,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -9681,31 +7091,6 @@ class $$WeightLogsTableOrderingComposer
     column: $table.notes,
     builder: (column) => ColumnOrderings(column),
   );
-
-  ColumnOrderings<String> get remoteId => $composableBuilder(
-    column: $table.remoteId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get isDeleted => $composableBuilder(
-    column: $table.isDeleted,
-    builder: (column) => ColumnOrderings(column),
-  );
 }
 
 class $$WeightLogsTableAnnotationComposer
@@ -9728,23 +7113,6 @@ class $$WeightLogsTableAnnotationComposer
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
-
-  GeneratedColumn<String> get remoteId =>
-      $composableBuilder(column: $table.remoteId, builder: (column) => column);
-
-  GeneratedColumn<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<bool> get isDeleted =>
-      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
 }
 
 class $$WeightLogsTableTableManager
@@ -9782,21 +7150,11 @@ class $$WeightLogsTableTableManager
                 Value<DateTime> logDate = const Value.absent(),
                 Value<double> weightKg = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
-                Value<String?> remoteId = const Value.absent(),
-                Value<int> syncStatus = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<bool> isDeleted = const Value.absent(),
               }) => WeightLogsCompanion(
                 id: id,
                 logDate: logDate,
                 weightKg: weightKg,
                 notes: notes,
-                remoteId: remoteId,
-                syncStatus: syncStatus,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                isDeleted: isDeleted,
               ),
           createCompanionCallback:
               ({
@@ -9804,21 +7162,11 @@ class $$WeightLogsTableTableManager
                 required DateTime logDate,
                 required double weightKg,
                 Value<String?> notes = const Value.absent(),
-                Value<String?> remoteId = const Value.absent(),
-                Value<int> syncStatus = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<bool> isDeleted = const Value.absent(),
               }) => WeightLogsCompanion.insert(
                 id: id,
                 logDate: logDate,
                 weightKg: weightKg,
                 notes: notes,
-                remoteId: remoteId,
-                syncStatus: syncStatus,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                isDeleted: isDeleted,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -9849,11 +7197,6 @@ typedef $$BodyFatLogsTableCreateCompanionBuilder =
       required double bodyFatPercent,
       Value<String> method,
       Value<String?> notes,
-      Value<String?> remoteId,
-      Value<int> syncStatus,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<bool> isDeleted,
     });
 typedef $$BodyFatLogsTableUpdateCompanionBuilder =
     BodyFatLogsCompanion Function({
@@ -9862,11 +7205,6 @@ typedef $$BodyFatLogsTableUpdateCompanionBuilder =
       Value<double> bodyFatPercent,
       Value<String> method,
       Value<String?> notes,
-      Value<String?> remoteId,
-      Value<int> syncStatus,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<bool> isDeleted,
     });
 
 class $$BodyFatLogsTableFilterComposer
@@ -9900,31 +7238,6 @@ class $$BodyFatLogsTableFilterComposer
 
   ColumnFilters<String> get notes => $composableBuilder(
     column: $table.notes,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get remoteId => $composableBuilder(
-    column: $table.remoteId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get isDeleted => $composableBuilder(
-    column: $table.isDeleted,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -9962,31 +7275,6 @@ class $$BodyFatLogsTableOrderingComposer
     column: $table.notes,
     builder: (column) => ColumnOrderings(column),
   );
-
-  ColumnOrderings<String> get remoteId => $composableBuilder(
-    column: $table.remoteId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get isDeleted => $composableBuilder(
-    column: $table.isDeleted,
-    builder: (column) => ColumnOrderings(column),
-  );
 }
 
 class $$BodyFatLogsTableAnnotationComposer
@@ -10014,23 +7302,6 @@ class $$BodyFatLogsTableAnnotationComposer
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
-
-  GeneratedColumn<String> get remoteId =>
-      $composableBuilder(column: $table.remoteId, builder: (column) => column);
-
-  GeneratedColumn<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<bool> get isDeleted =>
-      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
 }
 
 class $$BodyFatLogsTableTableManager
@@ -10069,22 +7340,12 @@ class $$BodyFatLogsTableTableManager
                 Value<double> bodyFatPercent = const Value.absent(),
                 Value<String> method = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
-                Value<String?> remoteId = const Value.absent(),
-                Value<int> syncStatus = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<bool> isDeleted = const Value.absent(),
               }) => BodyFatLogsCompanion(
                 id: id,
                 logDate: logDate,
                 bodyFatPercent: bodyFatPercent,
                 method: method,
                 notes: notes,
-                remoteId: remoteId,
-                syncStatus: syncStatus,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                isDeleted: isDeleted,
               ),
           createCompanionCallback:
               ({
@@ -10093,22 +7354,12 @@ class $$BodyFatLogsTableTableManager
                 required double bodyFatPercent,
                 Value<String> method = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
-                Value<String?> remoteId = const Value.absent(),
-                Value<int> syncStatus = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<bool> isDeleted = const Value.absent(),
               }) => BodyFatLogsCompanion.insert(
                 id: id,
                 logDate: logDate,
                 bodyFatPercent: bodyFatPercent,
                 method: method,
                 notes: notes,
-                remoteId: remoteId,
-                syncStatus: syncStatus,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                isDeleted: isDeleted,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -10458,11 +7709,6 @@ typedef $$ExpensesTableCreateCompanionBuilder =
       required double amount,
       Value<String?> description,
       Value<int?> linkedFoodLogId,
-      Value<String?> remoteId,
-      Value<int> syncStatus,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<bool> isDeleted,
     });
 typedef $$ExpensesTableUpdateCompanionBuilder =
     ExpensesCompanion Function({
@@ -10472,11 +7718,6 @@ typedef $$ExpensesTableUpdateCompanionBuilder =
       Value<double> amount,
       Value<String?> description,
       Value<int?> linkedFoodLogId,
-      Value<String?> remoteId,
-      Value<int> syncStatus,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<bool> isDeleted,
     });
 
 final class $$ExpensesTableReferences
@@ -10548,31 +7789,6 @@ class $$ExpensesTableFilterComposer
 
   ColumnFilters<String> get description => $composableBuilder(
     column: $table.description,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get remoteId => $composableBuilder(
-    column: $table.remoteId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get isDeleted => $composableBuilder(
-    column: $table.isDeleted,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10652,31 +7868,6 @@ class $$ExpensesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get remoteId => $composableBuilder(
-    column: $table.remoteId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get isDeleted => $composableBuilder(
-    column: $table.isDeleted,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   $$ExpenseCategoriesTableOrderingComposer get categoryId {
     final $$ExpenseCategoriesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -10746,23 +7937,6 @@ class $$ExpensesTableAnnotationComposer
     column: $table.description,
     builder: (column) => column,
   );
-
-  GeneratedColumn<String> get remoteId =>
-      $composableBuilder(column: $table.remoteId, builder: (column) => column);
-
-  GeneratedColumn<int> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<bool> get isDeleted =>
-      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
 
   $$ExpenseCategoriesTableAnnotationComposer get categoryId {
     final $$ExpenseCategoriesTableAnnotationComposer composer =
@@ -10846,11 +8020,6 @@ class $$ExpensesTableTableManager
                 Value<double> amount = const Value.absent(),
                 Value<String?> description = const Value.absent(),
                 Value<int?> linkedFoodLogId = const Value.absent(),
-                Value<String?> remoteId = const Value.absent(),
-                Value<int> syncStatus = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<bool> isDeleted = const Value.absent(),
               }) => ExpensesCompanion(
                 id: id,
                 logDate: logDate,
@@ -10858,11 +8027,6 @@ class $$ExpensesTableTableManager
                 amount: amount,
                 description: description,
                 linkedFoodLogId: linkedFoodLogId,
-                remoteId: remoteId,
-                syncStatus: syncStatus,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                isDeleted: isDeleted,
               ),
           createCompanionCallback:
               ({
@@ -10872,11 +8036,6 @@ class $$ExpensesTableTableManager
                 required double amount,
                 Value<String?> description = const Value.absent(),
                 Value<int?> linkedFoodLogId = const Value.absent(),
-                Value<String?> remoteId = const Value.absent(),
-                Value<int> syncStatus = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<bool> isDeleted = const Value.absent(),
               }) => ExpensesCompanion.insert(
                 id: id,
                 logDate: logDate,
@@ -10884,11 +8043,6 @@ class $$ExpensesTableTableManager
                 amount: amount,
                 description: description,
                 linkedFoodLogId: linkedFoodLogId,
-                remoteId: remoteId,
-                syncStatus: syncStatus,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                isDeleted: isDeleted,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -10971,244 +8125,6 @@ typedef $$ExpensesTableProcessedTableManager =
       Expense,
       PrefetchHooks Function({bool categoryId, bool linkedFoodLogId})
     >;
-typedef $$SyncQueueTableCreateCompanionBuilder =
-    SyncQueueCompanion Function({
-      Value<int> id,
-      required String targetTable,
-      required int recordId,
-      required String action,
-      Value<DateTime> queuedAt,
-      Value<int> retryCount,
-      Value<String?> errorMessage,
-    });
-typedef $$SyncQueueTableUpdateCompanionBuilder =
-    SyncQueueCompanion Function({
-      Value<int> id,
-      Value<String> targetTable,
-      Value<int> recordId,
-      Value<String> action,
-      Value<DateTime> queuedAt,
-      Value<int> retryCount,
-      Value<String?> errorMessage,
-    });
-
-class $$SyncQueueTableFilterComposer
-    extends Composer<_$AppDatabase, $SyncQueueTable> {
-  $$SyncQueueTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get targetTable => $composableBuilder(
-    column: $table.targetTable,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get recordId => $composableBuilder(
-    column: $table.recordId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get action => $composableBuilder(
-    column: $table.action,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get queuedAt => $composableBuilder(
-    column: $table.queuedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get retryCount => $composableBuilder(
-    column: $table.retryCount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get errorMessage => $composableBuilder(
-    column: $table.errorMessage,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$SyncQueueTableOrderingComposer
-    extends Composer<_$AppDatabase, $SyncQueueTable> {
-  $$SyncQueueTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get targetTable => $composableBuilder(
-    column: $table.targetTable,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get recordId => $composableBuilder(
-    column: $table.recordId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get action => $composableBuilder(
-    column: $table.action,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get queuedAt => $composableBuilder(
-    column: $table.queuedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get retryCount => $composableBuilder(
-    column: $table.retryCount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get errorMessage => $composableBuilder(
-    column: $table.errorMessage,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$SyncQueueTableAnnotationComposer
-    extends Composer<_$AppDatabase, $SyncQueueTable> {
-  $$SyncQueueTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get targetTable => $composableBuilder(
-    column: $table.targetTable,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get recordId =>
-      $composableBuilder(column: $table.recordId, builder: (column) => column);
-
-  GeneratedColumn<String> get action =>
-      $composableBuilder(column: $table.action, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get queuedAt =>
-      $composableBuilder(column: $table.queuedAt, builder: (column) => column);
-
-  GeneratedColumn<int> get retryCount => $composableBuilder(
-    column: $table.retryCount,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get errorMessage => $composableBuilder(
-    column: $table.errorMessage,
-    builder: (column) => column,
-  );
-}
-
-class $$SyncQueueTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $SyncQueueTable,
-          SyncQueueData,
-          $$SyncQueueTableFilterComposer,
-          $$SyncQueueTableOrderingComposer,
-          $$SyncQueueTableAnnotationComposer,
-          $$SyncQueueTableCreateCompanionBuilder,
-          $$SyncQueueTableUpdateCompanionBuilder,
-          (
-            SyncQueueData,
-            BaseReferences<_$AppDatabase, $SyncQueueTable, SyncQueueData>,
-          ),
-          SyncQueueData,
-          PrefetchHooks Function()
-        > {
-  $$SyncQueueTableTableManager(_$AppDatabase db, $SyncQueueTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$SyncQueueTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$SyncQueueTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$SyncQueueTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<String> targetTable = const Value.absent(),
-                Value<int> recordId = const Value.absent(),
-                Value<String> action = const Value.absent(),
-                Value<DateTime> queuedAt = const Value.absent(),
-                Value<int> retryCount = const Value.absent(),
-                Value<String?> errorMessage = const Value.absent(),
-              }) => SyncQueueCompanion(
-                id: id,
-                targetTable: targetTable,
-                recordId: recordId,
-                action: action,
-                queuedAt: queuedAt,
-                retryCount: retryCount,
-                errorMessage: errorMessage,
-              ),
-          createCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                required String targetTable,
-                required int recordId,
-                required String action,
-                Value<DateTime> queuedAt = const Value.absent(),
-                Value<int> retryCount = const Value.absent(),
-                Value<String?> errorMessage = const Value.absent(),
-              }) => SyncQueueCompanion.insert(
-                id: id,
-                targetTable: targetTable,
-                recordId: recordId,
-                action: action,
-                queuedAt: queuedAt,
-                retryCount: retryCount,
-                errorMessage: errorMessage,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$SyncQueueTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $SyncQueueTable,
-      SyncQueueData,
-      $$SyncQueueTableFilterComposer,
-      $$SyncQueueTableOrderingComposer,
-      $$SyncQueueTableAnnotationComposer,
-      $$SyncQueueTableCreateCompanionBuilder,
-      $$SyncQueueTableUpdateCompanionBuilder,
-      (
-        SyncQueueData,
-        BaseReferences<_$AppDatabase, $SyncQueueTable, SyncQueueData>,
-      ),
-      SyncQueueData,
-      PrefetchHooks Function()
-    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -11235,6 +8151,4 @@ class $AppDatabaseManager {
       $$ExpenseCategoriesTableTableManager(_db, _db.expenseCategories);
   $$ExpensesTableTableManager get expenses =>
       $$ExpensesTableTableManager(_db, _db.expenses);
-  $$SyncQueueTableTableManager get syncQueue =>
-      $$SyncQueueTableTableManager(_db, _db.syncQueue);
 }
