@@ -11,6 +11,7 @@ import 'features/nutrition/presentation/screens/manual_food_log_screen.dart'; //
 import 'features/finance/presentation/screens/finance_home_screen.dart';
 import 'features/body/presentation/screens/body_tracking_screen.dart';
 import 'features/settings/presentation/screens/settings_screen.dart'; // Add this
+import 'features/insights/presentation/screens/insights_home_screen.dart';
 
 // Database provider
 final databaseProvider = Provider<AppDatabase>((ref) => AppDatabase());
@@ -139,7 +140,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _calories = 0;
   int _protein = 0;
   double _spending = 0;
-  // bool _isLoading = true;
+
+  // Averages
+  int _avgCalories = 0;
+  int _avgBurned = 0;
+  double _avgSpending = 0;
 
   String _currentInsight = 'Start tracking to unlock insights!';
   IconData _insightIcon = Icons.lightbulb_rounded;
@@ -155,8 +160,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
     final endOfDay = startOfDay.add(const Duration(days: 1));
+    final weekAgo = startOfDay.subtract(const Duration(days: 7));
 
-    // Fetch Food Logs
+    // --- TODAY'S DATA ---
+
+    // Fetch Food Logs (Today)
     final foodLogsQuery = db.select(db.foodLogs).join([
       drift.innerJoin(db.foods, db.foods.id.equalsExp(db.foodLogs.foodId)),
     ])..where(db.foodLogs.logDate.isBetweenValues(startOfDay, endOfDay));
@@ -173,12 +181,78 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       totalProt += (food.protein * log.servings).round();
     }
 
-    // Fetch Expenses
+    // Fetch Expenses (Today)
     final expenses = await (db.select(db.expenses)
       ..where((tbl) => tbl.logDate.isBetweenValues(startOfDay, endOfDay)))
       .get();
       
     final totalSpent = expenses.fold(0.0, (sum, e) => sum + e.amount);
+
+
+    // --- 7-DAY AVERAGES ---
+
+    // Avg Nutrition
+    final weeklyFoodLogs = await (db.select(db.foodLogs).join([
+      drift.innerJoin(db.foods, db.foods.id.equalsExp(db.foodLogs.foodId)),
+    ])..where(db.foodLogs.logDate.isBetweenValues(weekAgo, startOfDay))).get();
+
+    int weeklyCals = 0;
+    final Map<String, int> activeFoodDays = {};
+    
+    for (var row in weeklyFoodLogs) {
+      final food = row.readTable(db.foods);
+      final log = row.readTable(db.foodLogs);
+      weeklyCals += (food.calories * log.servings).round();
+      final dayKey = '${log.logDate.year}-${log.logDate.month}-${log.logDate.day}';
+      activeFoodDays[dayKey] = 1;
+    }
+    final int avgCals = activeFoodDays.isEmpty ? 0 : (weeklyCals / 7).round();
+
+
+    // Avg Expenses
+    final weeklyExpenses = await (db.select(db.expenses)
+      ..where((tbl) => tbl.logDate.isBetweenValues(weekAgo, startOfDay)))
+      .get();
+    
+    final weeklySpent = weeklyExpenses.fold(0.0, (sum, e) => sum + e.amount);
+    final double avgSpent = weeklySpent / 7;
+
+
+    // Avg Burned (Estimated)
+    final weeklyExerciseLogs = await (db.select(db.exerciseLogs).join([
+      drift.innerJoin(db.exercises, db.exercises.id.equalsExp(db.exerciseLogs.exerciseId)),
+    ])..where(db.exerciseLogs.logDate.isBetweenValues(weekAgo, startOfDay))).get();
+
+    double weeklyBurned = 0;
+
+    for (var row in weeklyExerciseLogs) {
+      final log = row.readTable(db.exerciseLogs);
+      final exercise = row.readTable(db.exercises);
+      
+      double calories = 0;
+      int duration = log.durationMinutes ?? 0;
+      
+      if (exercise.isCardio) {
+        // Estimate cardio: ~8-12 kcal/min. defaulting to 10.
+        // If distance but no time, assume 6 min/km pace? 
+        if (duration == 0 && (log.distanceKm ?? 0) > 0) {
+           duration = ((log.distanceKm!) * 6).round(); // est 6 min/km
+        }
+        calories = duration * 10;
+      } else {
+        // Strength: Estimate ~4-5 kcal/min.
+        // If no duration, estimate 3 mins per set (incl rest)
+        if (duration == 0) {
+           duration = (log.sets ?? 1) * 3;
+        }
+        calories = duration * 5;
+      }
+      weeklyBurned += calories;
+    }
+    final int avgBurn = (weeklyBurned / 7).round();
+
+
+    // --- INSIGHTS ---
 
     String insight = 'Log food and expenses to see insights!';
     IconData icon = Icons.lightbulb_rounded;
@@ -192,7 +266,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
        insight = 'Your food cost is roughly ₹${costPer100.toStringAsFixed(0)} per 100 calories.';
        icon = Icons.restaurant_rounded;
     } else if (totalCals > 0 && totalProt > 0) {
-      final ratio = totalCals / totalProt;
+       final ratio = totalCals / totalProt;
       insight = 'You are consuming ${ratio.toStringAsFixed(0)} calories for every 1g of protein.';
       icon = Icons.monitor_weight_rounded;
     }
@@ -202,7 +276,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         _calories = totalCals;
         _protein = totalProt;
         _spending = totalSpent;
-        // _isLoading = false;
+        
+        _avgCalories = avgCals;
+        _avgSpending = avgSpent;
+        _avgBurned = avgBurn;
+
         _currentInsight = insight;
         _insightIcon = icon;
       });
@@ -288,6 +366,71 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ],
               ),
             ).animate().fadeIn(delay: 100.ms, duration: 400.ms).slideY(begin: 0.1),
+            
+            const SizedBox(height: 24),
+
+            // Weekly Averages Card
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppTheme.card,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppTheme.surfaceLight),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.date_range_rounded, color: AppTheme.primary, size: 18),
+                      const SizedBox(width: 8),
+                      Text(
+                        '7-Day Average',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: AppTheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      // Eat
+                      Column(
+                        children: [
+                          Text(
+                            '$_avgCalories',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          Text('kcal eat', style: Theme.of(context).textTheme.bodySmall),
+                        ],
+                      ),
+                      // Burn
+                      Column(
+                        children: [
+                          Text(
+                            '$_avgBurned',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          Text('kcal burn', style: Theme.of(context).textTheme.bodySmall),
+                        ],
+                      ),
+                      // Spend
+                      Column(
+                        children: [
+                          Text(
+                            '₹${_avgSpending.toStringAsFixed(0)}',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          Text('spent', style: Theme.of(context).textTheme.bodySmall),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ).animate().fadeIn(delay: 150.ms, duration: 400.ms).slideY(begin: 0.1),
             
             const SizedBox(height: 24),
             
@@ -385,44 +528,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             
             const SizedBox(height: 12),
             
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppTheme.card,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.insightsColor.withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppTheme.insightsColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
+            InkWell(
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const InsightsHomeScreen()),
+                );
+                _loadHomeData();
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppTheme.card,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.insightsColor.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.insightsColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        _insightIcon,
+                        color: AppTheme.insightsColor,
+                      ),
                     ),
-                    child: Icon(
-                      _insightIcon,
-                      color: AppTheme.insightsColor,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Insight of the Day',
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _currentInsight,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Insight of the Day',
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _currentInsight,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                    Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.textMuted, size: 16),
+                  ],
+                ),
               ),
             ).animate().fadeIn(delay: 400.ms, duration: 400.ms).slideY(begin: 0.1),
           ],

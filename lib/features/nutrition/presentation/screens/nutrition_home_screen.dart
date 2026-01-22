@@ -10,6 +10,7 @@ import 'manual_food_log_screen.dart';
 
 import '../widgets/supplement_alcohol_sheets.dart';
 import '../widgets/edit_food_log_dialog.dart';
+import '../widgets/edit_alcohol_log_dialog.dart';
 
 class NutritionHomeScreen extends ConsumerStatefulWidget {
   const NutritionHomeScreen({super.key});
@@ -20,16 +21,23 @@ class NutritionHomeScreen extends ConsumerStatefulWidget {
 
 class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
   DateTime _selectedDate = DateTime.now();
+  bool _isPlanningMode = false; // Planning mode toggle
   
-  // Today's totals (will be calculated from food logs)
+  // Target totals (all logged food)
   double _totalCalories = 0;
   double _totalProtein = 0;
   double _totalCarbs = 0;
   double _totalFat = 0;
+  
+  // Actual totals (only eaten food)
+  double _actualCalories = 0;
+  double _actualProtein = 0;
+  double _actualCarbs = 0;
+  double _actualFat = 0;
 
-  bool _isLoading = true;
   List<TypedResult> _dailyLogs = [];
   List<SupplementLogWithDetails> _supplementLogs = [];
+  List<AlcoholLog> _alcoholLogs = [];
 
   @override
   void initState() {
@@ -38,7 +46,6 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
   }
 
   Future<void> _loadDailyLogs() async {
-    setState(() => _isLoading = true);
     final db = ref.read(databaseProvider);
     final start = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
     final end = start.add(const Duration(days: 1));
@@ -50,17 +57,29 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
       
     final results = await query.get();
     
+    // Target totals (all food)
     double cal = 0, prot = 0, carb = 0, fat = 0;
+    // Actual totals (only eaten food)
+    double aCal = 0, aProt = 0, aCarb = 0, aFat = 0;
     
     for (var row in results) {
       final log = row.readTable(db.foodLogs);
       final food = row.readTable(db.foods);
       final ratio = log.servings;
       
+      // Add to target totals (all food)
       cal += food.calories * ratio;
       prot += food.protein * ratio;
       carb += food.carbs * ratio;
       fat += food.fat * ratio;
+      
+      // Add to actual totals only if eaten
+      if (log.isEaten) {
+        aCal += food.calories * ratio;
+        aProt += food.protein * ratio;
+        aCarb += food.carbs * ratio;
+        aFat += food.fat * ratio;
+      }
     }
     
     // Load Supplement Logs
@@ -75,15 +94,40 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
       supplement: row.readTable(db.supplements),
     )).toList();
     
+    // Load Alcohol Logs
+    final alcoholResults = await (db.select(db.alcoholLogs)
+      ..where((a) => a.logDate.isBetweenValues(start, end)))
+      .get();
+    
+    // Add alcohol macros to totals
+    for (var alcohol in alcoholResults) {
+      cal += alcohol.calories;
+      prot += alcohol.protein;
+      carb += alcohol.carbs;
+      fat += alcohol.fat;
+      
+      // Add to actual totals only if eaten (drank)
+      if (alcohol.isEaten) {
+        aCal += alcohol.calories;
+        aProt += alcohol.protein;
+        aCarb += alcohol.carbs;
+        aFat += alcohol.fat;
+      }
+    }
+    
     if (mounted) {
       setState(() {
         _dailyLogs = results;
         _supplementLogs = suppList;
+        _alcoholLogs = alcoholResults;
         _totalCalories = cal;
         _totalProtein = prot;
         _totalCarbs = carb;
         _totalFat = fat;
-        _isLoading = false;
+        _actualCalories = aCal;
+        _actualProtein = aProt;
+        _actualCarbs = aCarb;
+        _actualFat = aFat;
       });
     }
   }
@@ -116,6 +160,17 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
                 ),
                 Row(
                   children: [
+                    // Planning Mode Toggle
+                    IconButton(
+                      onPressed: () => setState(() => _isPlanningMode = !_isPlanningMode),
+                      icon: Icon(_isPlanningMode ? Icons.checklist_rounded : Icons.checklist_rtl_rounded),
+                      style: IconButton.styleFrom(
+                        backgroundColor: _isPlanningMode ? AppTheme.nutritionColor : AppTheme.surfaceLight,
+                        foregroundColor: _isPlanningMode ? Colors.white : null,
+                      ),
+                      tooltip: _isPlanningMode ? 'Exit Planning Mode' : 'Enter Planning Mode',
+                    ),
+                    const SizedBox(width: 8),
                     IconButton(
                       onPressed: () => _selectDate(context),
                       icon: const Icon(Icons.calendar_month_rounded),
@@ -139,8 +194,151 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
             
             const SizedBox(height: 24),
             
-            // Macro Ring Chart
-            Container(
+            // Macro Ring Chart - Split view in planning mode
+            _isPlanningMode
+                ? Row(
+                    children: [
+                      // Target (Planned)
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppTheme.card,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                'Target',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: AppTheme.textMuted,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              SizedBox(
+                                height: 100,
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    PieChart(
+                                      PieChartData(
+                                        sectionsSpace: 2,
+                                        centerSpaceRadius: 30,
+                                        sections: [
+                                          PieChartSectionData(
+                                            value: _totalProtein > 0 ? _totalProtein : 1,
+                                            color: AppTheme.proteinColor,
+                                            radius: 15,
+                                            showTitle: false,
+                                          ),
+                                          PieChartSectionData(
+                                            value: _totalCarbs > 0 ? _totalCarbs : 1,
+                                            color: AppTheme.carbsColor,
+                                            radius: 15,
+                                            showTitle: false,
+                                          ),
+                                          PieChartSectionData(
+                                            value: _totalFat > 0 ? _totalFat : 1,
+                                            color: AppTheme.fatColor,
+                                            radius: 15,
+                                            showTitle: false,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Text(
+                                      '${_totalCalories.toInt()}',
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '${_totalProtein.toInt()}p • ${_totalCarbs.toInt()}c • ${_totalFat.toInt()}f',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Actual (Eaten)
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppTheme.card,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppTheme.nutritionColor.withValues(alpha: 0.3), width: 2),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                'Actual',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: AppTheme.nutritionColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              SizedBox(
+                                height: 100,
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    PieChart(
+                                      PieChartData(
+                                        sectionsSpace: 2,
+                                        centerSpaceRadius: 30,
+                                        sections: [
+                                          PieChartSectionData(
+                                            value: _actualProtein > 0 ? _actualProtein : 1,
+                                            color: AppTheme.proteinColor,
+                                            radius: 15,
+                                            showTitle: false,
+                                          ),
+                                          PieChartSectionData(
+                                            value: _actualCarbs > 0 ? _actualCarbs : 1,
+                                            color: AppTheme.carbsColor,
+                                            radius: 15,
+                                            showTitle: false,
+                                          ),
+                                          PieChartSectionData(
+                                            value: _actualFat > 0 ? _actualFat : 1,
+                                            color: AppTheme.fatColor,
+                                            radius: 15,
+                                            showTitle: false,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Text(
+                                      '${_actualCalories.toInt()}',
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color: AppTheme.nutritionColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '${_actualProtein.toInt()}p • ${_actualCarbs.toInt()}c • ${_actualFat.toInt()}f',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: AppTheme.nutritionColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ).animate().fadeIn(delay: 100.ms, duration: 400.ms)
+                : Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: AppTheme.card,
@@ -281,7 +479,7 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
             
             const SizedBox(height: 12),
             
-            (_dailyLogs.isEmpty && _supplementLogs.isEmpty)
+            (_dailyLogs.isEmpty && _supplementLogs.isEmpty && _alcoholLogs.isEmpty)
                 ? _buildEmptyLogState()
                 : Column(
                     children: [
@@ -289,6 +487,10 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
                       if (_supplementLogs.isNotEmpty) ...[                  
                         const SizedBox(height: 16),
                         _buildSupplementList(),
+                      ],
+                      if (_alcoholLogs.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        _buildAlcoholList(),
                       ],
                     ],
                   ),
@@ -320,16 +522,34 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
             decoration: BoxDecoration(
               color: AppTheme.card,
               borderRadius: BorderRadius.circular(16),
+              // Visual indication of not eaten in planning mode
+              border: _isPlanningMode && !log.isEaten
+                  ? Border.all(color: AppTheme.textMuted.withValues(alpha: 0.3), width: 1)
+                  : null,
             ),
             child: Row(
               children: [
+              // Checkbox in planning mode
+              if (_isPlanningMode) ...[
+                Checkbox(
+                  value: log.isEaten,
+                  onChanged: (value) => _toggleEaten(log, value ?? false),
+                  activeColor: AppTheme.nutritionColor,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                ),
+                const SizedBox(width: 8),
+              ],
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppTheme.nutritionColor.withValues(alpha: 0.1),
+                  color: AppTheme.nutritionColor.withValues(alpha: log.isEaten || !_isPlanningMode ? 0.1 : 0.05),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.restaurant_menu_rounded, color: AppTheme.nutritionColor, size: 20),
+                child: Icon(
+                  Icons.restaurant_menu_rounded,
+                  color: log.isEaten || !_isPlanningMode ? AppTheme.nutritionColor : AppTheme.textMuted,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -338,12 +558,17 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
                   children: [
                     Text(
                       food.name,
-                      style: Theme.of(context).textTheme.titleSmall,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        decoration: _isPlanningMode && !log.isEaten ? TextDecoration.lineThrough : null,
+                        color: _isPlanningMode && !log.isEaten ? AppTheme.textMuted : null,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${log.mealType} • ${food.calories.toInt()} kcal',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      '${log.mealType} - ${(food.calories * log.servings).toInt()} kcal',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: _isPlanningMode && !log.isEaten ? AppTheme.textMuted : null,
+                      ),
                     ),
                   ],
                 ),
@@ -352,16 +577,28 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '${food.protein.toStringAsFixed(1)}p',
-                    style: TextStyle(color: AppTheme.proteinColor, fontSize: 12, fontWeight: FontWeight.bold),
+                    '${(food.protein * log.servings).toStringAsFixed(1)}p',
+                    style: TextStyle(
+                      color: _isPlanningMode && !log.isEaten ? AppTheme.textMuted : AppTheme.proteinColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text(
-                    '${food.carbs.toStringAsFixed(1)}c',
-                    style: TextStyle(color: AppTheme.carbsColor, fontSize: 12, fontWeight: FontWeight.bold),
+                    '${(food.carbs * log.servings).toStringAsFixed(1)}c',
+                    style: TextStyle(
+                      color: _isPlanningMode && !log.isEaten ? AppTheme.textMuted : AppTheme.carbsColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text(
-                    '${food.fat.toStringAsFixed(1)}f',
-                    style: TextStyle(color: AppTheme.fatColor, fontSize: 12, fontWeight: FontWeight.bold),
+                    '${(food.fat * log.servings).toStringAsFixed(1)}f',
+                    style: TextStyle(
+                      color: _isPlanningMode && !log.isEaten ? AppTheme.textMuted : AppTheme.fatColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -371,6 +608,24 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
         );
       },
     );
+  }
+
+  /// Toggle the eaten status of a food log
+  Future<void> _toggleEaten(FoodLog log, bool eaten) async {
+    final db = ref.read(databaseProvider);
+    await (db.update(db.foodLogs)..where((l) => l.id.equals(log.id))).write(
+      FoodLogsCompanion(isEaten: Value(eaten)),
+    );
+    _loadDailyLogs(); // Refresh to update totals
+  }
+
+  /// Toggle the eaten status of an alcohol log
+  Future<void> _toggleAlcoholEaten(AlcoholLog log, bool eaten) async {
+    final db = ref.read(databaseProvider);
+    await (db.update(db.alcoholLogs)..where((l) => l.id.equals(log.id))).write(
+      AlcoholLogsCompanion(isEaten: Value(eaten)),
+    );
+    _loadDailyLogs(); // Refresh to update totals
   }
 
   Widget _buildSupplementList() {
@@ -409,6 +664,111 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
         }),
       ],
     );
+  }
+
+  Widget _buildAlcoholList() {
+    // Drink type display names
+    const drinkNames = {
+      'beer': 'Beer',
+      'wine': 'Wine',
+      'whiskey': 'Whiskey',
+      'vodka': 'Vodka',
+      'cocktail': 'Cocktail',
+      'other': 'Other',
+    };
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Alcohol', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textMuted)),
+        const SizedBox(height: 8),
+        ...List.generate(_alcoholLogs.length, (index) {
+          final a = _alcoholLogs[index];
+          final drinkName = drinkNames[a.drinkType] ?? a.drinkType;
+          return InkWell(
+            onTap: () => _editAlcoholLog(context, a),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.card,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  if (_isPlanningMode) ...[
+                    Checkbox(
+                      value: a.isEaten,
+                      onChanged: (value) => _toggleAlcoholEaten(a, value ?? false),
+                      activeColor: Colors.amber,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.withValues(alpha: a.isEaten || !_isPlanningMode ? 0.15 : 0.05),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.local_bar_rounded, 
+                      color: a.isEaten || !_isPlanningMode ? Colors.amber : AppTheme.textMuted,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          drinkName, 
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            decoration: _isPlanningMode && !a.isEaten ? TextDecoration.lineThrough : null,
+                            color: _isPlanningMode && !a.isEaten ? AppTheme.textMuted : null,
+                          ),
+                        ),
+                        if (a.volumeMl != null)
+                          Text('${a.volumeMl!.toInt()} ml x ${a.units.toStringAsFixed(1)}', 
+                               style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textMuted)),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text('${a.calories.toInt()} kcal', 
+                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                             color: _isPlanningMode && !a.isEaten ? AppTheme.textMuted : Colors.amber,
+                           )),
+                      if (a.carbs > 0)
+                        Text('${a.carbs.toStringAsFixed(1)}g carbs', 
+                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                               color: _isPlanningMode && !a.isEaten ? AppTheme.textMuted : AppTheme.carbsColor, 
+                               fontSize: 10,
+                             )),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ).animate().fadeIn(delay: (450 + index * 50).ms);
+        }),
+      ],
+    );
+  }
+
+  void _editAlcoholLog(BuildContext context, AlcoholLog log) async {
+    final result = await showDialog(
+      context: context,
+      builder: (context) => EditAlcoholLogDialog(log: log),
+    );
+    
+    if (result == true) {
+      _loadDailyLogs();
+    }
   }
 
   Widget _buildMacroLabel(String label, double value, String unit, Color color) {
@@ -533,13 +893,14 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
     _loadDailyLogs(); // Refresh after closing
   }
 
-  void _showAlcoholSheet(BuildContext context) {
-    showModalBottomSheet(
+  void _showAlcoholSheet(BuildContext context) async {
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const AlcoholLogSheet(),
     );
+    _loadDailyLogs(); // Refresh after closing
   }
 
   void _showBarcodeScannerPlaceholder(BuildContext context) {

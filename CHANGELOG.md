@@ -2,6 +2,80 @@
 
 All notable changes to Forge will be documented in this file.
 
+## [0.3.1] - 2026-01-22
+
+### Added
+- **Food Planner Mode**
+  - Toggle button in Nutrition header to switch between logging and planning modes
+  - Split macro view showing **Target** (all planned food) vs **Actual** (eaten food only)
+  - Checkboxes on food items to mark as eaten/not eaten
+  - Visual feedback: uneaten items appear muted with strikethrough text
+  - Database schema v3: Added `isEaten` column to `FoodLogs` table
+
+- **Macro Editing in Food Log**
+  - Edit dialog now has toggle to edit base macros (calories, protein, carbs, fat)
+  - Updates both the log and the underlying food record when saved
+
+- **Alcohol Logs Display**
+  - Alcohol logs now appear in Nutrition screen under food/supplements
+  - Alcohol calories added to daily totals
+  - Tap to edit: change drink type, volume, units, or delete
+
+- **Alcohol Macros Tracking**
+  - Beer ~12g carbs, Wine ~4g carbs per serving (auto-calculated)
+  - Carbs from alcohol now included in daily macro totals
+  - Database schema v4: Added protein, carbs, fat columns to `AlcoholLogs`
+  - **Planning Mode**: Alcohol logs now have checkboxes like food items (schema v5)
+  - Unchecked alcohol items do not count towards "Actual" totals
+
+### Fixed
+- Food card now shows macros multiplied by serving size (was showing base values)
+
+## [0.3.0] - 2026-01-21
+
+### Added
+- **Cross-Platform Backup & Restore**
+  - Full JSON export/import of all database tables
+  - Platform-agnostic implementation using `share_plus` (Native) and file download (Web)
+  - Type-safe restoration with `insertOnConflictUpdate`
+  - Added Backup/Restore buttons to Settings screen
+
+- **PWA Support**
+  - Replaced `dart:io` dependencies with conditional imports
+  - Configured GitHub Actions for automated web deployment
+  - Optimized database connection for Web (WASM/IndexedDB)
+
+- **Home Dashboard Enhancements**
+  - **7-Day Averages Card**: Shows average Calories Eaten, Calories Burnt (est.), and Daily Spending
+  - Integrated real-time weekly stats calculation
+
+- **Finance Module**
+  - **Swipe-to-Delete**: Added ability to delete expenses with swipe gesture
+  - **Undo Deletion**: SnackBar action to restore accidentally deleted expenses
+
+- **Settings: Exercise Management**
+  - New `ManageExercisesScreen` to view, search, add, and edit exercises directly from Settings
+  - `ExerciseEditorDialog` for adding custom exercises or fixing muscle group assignments
+  - Supports full editing of name, category, multi-select muscle groups, and cardio types (LISS/HIIT)
+
+- **Insights Page 2.0**
+  - New `InsightsHomeScreen` with time filters (7 Days / 30 Days / All Time)
+  - Finance metrics: Rs/100 kcal, Rs/10g protein
+  - Food efficiency: Best Protein/Rs, Best Calories/Rs
+  - Macro breakdown: Highest/Lowest protein % foods
+  - Auto-calculate calories from macros (P*4 + C*4 + F*9)
+
+### Changed
+- **Exercise Home Screen**
+  - Changed "Volume by Body Part" to **"Sets by Muscle Group"** display
+  - Improved set counting logic: Sets are now fully attributed to each targeted muscle group (e.g., Bench Press counts for both Chest and Triceps)
+  - Fixed rounding errors in volume distribution
+
+### Fixed
+- **Database Schema**: Added migration for `cardio_type` column (Schema v2) to prevent crashes on existing installs
+- **Backup Service**: Fixed variable scope issue in restore logic
+- **Food Logging**: Fixed missing `linkedFoodLogId` when creating expense from food cost
+
 ## [0.2.0] - 2026-01-19
 
 ### Added

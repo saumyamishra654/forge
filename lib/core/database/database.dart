@@ -56,6 +56,7 @@ class FoodLogs extends Table {
   IntColumn get foodId => integer().references(Foods, #id)();
   RealColumn get servings => real().withDefault(const Constant(1))();
   TextColumn get mealType => text()(); // breakfast, lunch, dinner, snack
+  BoolColumn get isEaten => boolean().withDefault(const Constant(true))(); // For planning mode
 }
 
 class Supplements extends Table {
@@ -76,9 +77,15 @@ class AlcoholLogs extends Table {
   IntColumn get id => integer().autoIncrement()();
   DateTimeColumn get logDate => dateTime()();
   TextColumn get drinkType => text()(); // beer, wine, whiskey, etc.
-  RealColumn get units => real()(); // standard drink units
+  RealColumn get units => real()(); // number of drinks
   RealColumn get calories => real()();
   RealColumn get volumeMl => real().nullable()();
+  // Macros (v4)
+  RealColumn get protein => real().withDefault(const Constant(0))();
+  RealColumn get carbs => real().withDefault(const Constant(0))();
+  RealColumn get fat => real().withDefault(const Constant(0))();
+  // v5: Planning mode support
+  BoolColumn get isEaten => boolean().withDefault(const Constant(true))();
 }
 
 // ============================================================================
@@ -142,7 +149,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(impl.connect());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 5; // v5: Added isEaten to AlcoholLogs
 
   @override
   MigrationStrategy get migration {
@@ -152,12 +159,31 @@ class AppDatabase extends _$AppDatabase {
         await _seedInitialData();
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        // Future schema migrations go here
+        // Migration from version 1 to 2: Add cardio_type column
+        if (from < 2) {
+          await m.addColumn(exercises, exercises.cardioType);
+        }
+        // Migration from version 2 to 3: Add isEaten column to food_logs
+        if (from < 3) {
+          await m.addColumn(foodLogs, foodLogs.isEaten);
+        }
+        // Migration from version 3 to 4: Add macros to alcohol_logs
+        if (from < 4) {
+          await m.addColumn(alcoholLogs, alcoholLogs.protein);
+          await m.addColumn(alcoholLogs, alcoholLogs.carbs);
+          await m.addColumn(alcoholLogs, alcoholLogs.fat);
+        }
+        // Migration from version 4 to 5: Add isEaten to alcohol_logs
+        if (from < 5) {
+          await m.addColumn(alcoholLogs, alcoholLogs.isEaten);
+        }
       },
-      // DISABLED: Migration was causing issues
-      // beforeOpen: (OpeningDetails details) async {
-      //   await _migrateExercisesOnce();
-      // },
+      beforeOpen: (OpeningDetails details) async {
+        // Run migrations for muscle groups if needed
+        if (details.versionBefore != null && details.versionBefore! < 2) {
+          await _migrateExercisesOnce();
+        }
+      },
     );
   }
 

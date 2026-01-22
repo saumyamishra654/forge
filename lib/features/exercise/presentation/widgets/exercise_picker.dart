@@ -224,7 +224,7 @@ class _ExercisePickerState extends ConsumerState<ExercisePicker> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: selectedCategory,
+                  initialValue: selectedCategory,
                   decoration: const InputDecoration(labelText: 'Category'),
                   items: ['Push', 'Pull', 'Legs', 'Cardio']
                       .map((c) => DropdownMenuItem(value: c, child: Text(c)))

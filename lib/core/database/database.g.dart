@@ -1876,6 +1876,21 @@ class $FoodLogsTable extends FoodLogs with TableInfo<$FoodLogsTable, FoodLog> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _isEatenMeta = const VerificationMeta(
+    'isEaten',
+  );
+  @override
+  late final GeneratedColumn<bool> isEaten = GeneratedColumn<bool>(
+    'is_eaten',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_eaten" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1883,6 +1898,7 @@ class $FoodLogsTable extends FoodLogs with TableInfo<$FoodLogsTable, FoodLog> {
     foodId,
     servings,
     mealType,
+    isEaten,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1929,6 +1945,12 @@ class $FoodLogsTable extends FoodLogs with TableInfo<$FoodLogsTable, FoodLog> {
     } else if (isInserting) {
       context.missing(_mealTypeMeta);
     }
+    if (data.containsKey('is_eaten')) {
+      context.handle(
+        _isEatenMeta,
+        isEaten.isAcceptableOrUnknown(data['is_eaten']!, _isEatenMeta),
+      );
+    }
     return context;
   }
 
@@ -1958,6 +1980,10 @@ class $FoodLogsTable extends FoodLogs with TableInfo<$FoodLogsTable, FoodLog> {
         DriftSqlType.string,
         data['${effectivePrefix}meal_type'],
       )!,
+      isEaten: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_eaten'],
+      )!,
     );
   }
 
@@ -1973,12 +1999,14 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
   final int foodId;
   final double servings;
   final String mealType;
+  final bool isEaten;
   const FoodLog({
     required this.id,
     required this.logDate,
     required this.foodId,
     required this.servings,
     required this.mealType,
+    required this.isEaten,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1988,6 +2016,7 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
     map['food_id'] = Variable<int>(foodId);
     map['servings'] = Variable<double>(servings);
     map['meal_type'] = Variable<String>(mealType);
+    map['is_eaten'] = Variable<bool>(isEaten);
     return map;
   }
 
@@ -1998,6 +2027,7 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
       foodId: Value(foodId),
       servings: Value(servings),
       mealType: Value(mealType),
+      isEaten: Value(isEaten),
     );
   }
 
@@ -2012,6 +2042,7 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
       foodId: serializer.fromJson<int>(json['foodId']),
       servings: serializer.fromJson<double>(json['servings']),
       mealType: serializer.fromJson<String>(json['mealType']),
+      isEaten: serializer.fromJson<bool>(json['isEaten']),
     );
   }
   @override
@@ -2023,6 +2054,7 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
       'foodId': serializer.toJson<int>(foodId),
       'servings': serializer.toJson<double>(servings),
       'mealType': serializer.toJson<String>(mealType),
+      'isEaten': serializer.toJson<bool>(isEaten),
     };
   }
 
@@ -2032,12 +2064,14 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
     int? foodId,
     double? servings,
     String? mealType,
+    bool? isEaten,
   }) => FoodLog(
     id: id ?? this.id,
     logDate: logDate ?? this.logDate,
     foodId: foodId ?? this.foodId,
     servings: servings ?? this.servings,
     mealType: mealType ?? this.mealType,
+    isEaten: isEaten ?? this.isEaten,
   );
   FoodLog copyWithCompanion(FoodLogsCompanion data) {
     return FoodLog(
@@ -2046,6 +2080,7 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
       foodId: data.foodId.present ? data.foodId.value : this.foodId,
       servings: data.servings.present ? data.servings.value : this.servings,
       mealType: data.mealType.present ? data.mealType.value : this.mealType,
+      isEaten: data.isEaten.present ? data.isEaten.value : this.isEaten,
     );
   }
 
@@ -2056,13 +2091,15 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
           ..write('logDate: $logDate, ')
           ..write('foodId: $foodId, ')
           ..write('servings: $servings, ')
-          ..write('mealType: $mealType')
+          ..write('mealType: $mealType, ')
+          ..write('isEaten: $isEaten')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, logDate, foodId, servings, mealType);
+  int get hashCode =>
+      Object.hash(id, logDate, foodId, servings, mealType, isEaten);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2071,7 +2108,8 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
           other.logDate == this.logDate &&
           other.foodId == this.foodId &&
           other.servings == this.servings &&
-          other.mealType == this.mealType);
+          other.mealType == this.mealType &&
+          other.isEaten == this.isEaten);
 }
 
 class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
@@ -2080,12 +2118,14 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
   final Value<int> foodId;
   final Value<double> servings;
   final Value<String> mealType;
+  final Value<bool> isEaten;
   const FoodLogsCompanion({
     this.id = const Value.absent(),
     this.logDate = const Value.absent(),
     this.foodId = const Value.absent(),
     this.servings = const Value.absent(),
     this.mealType = const Value.absent(),
+    this.isEaten = const Value.absent(),
   });
   FoodLogsCompanion.insert({
     this.id = const Value.absent(),
@@ -2093,6 +2133,7 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
     required int foodId,
     this.servings = const Value.absent(),
     required String mealType,
+    this.isEaten = const Value.absent(),
   }) : logDate = Value(logDate),
        foodId = Value(foodId),
        mealType = Value(mealType);
@@ -2102,6 +2143,7 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
     Expression<int>? foodId,
     Expression<double>? servings,
     Expression<String>? mealType,
+    Expression<bool>? isEaten,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2109,6 +2151,7 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
       if (foodId != null) 'food_id': foodId,
       if (servings != null) 'servings': servings,
       if (mealType != null) 'meal_type': mealType,
+      if (isEaten != null) 'is_eaten': isEaten,
     });
   }
 
@@ -2118,6 +2161,7 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
     Value<int>? foodId,
     Value<double>? servings,
     Value<String>? mealType,
+    Value<bool>? isEaten,
   }) {
     return FoodLogsCompanion(
       id: id ?? this.id,
@@ -2125,6 +2169,7 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
       foodId: foodId ?? this.foodId,
       servings: servings ?? this.servings,
       mealType: mealType ?? this.mealType,
+      isEaten: isEaten ?? this.isEaten,
     );
   }
 
@@ -2146,6 +2191,9 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
     if (mealType.present) {
       map['meal_type'] = Variable<String>(mealType.value);
     }
+    if (isEaten.present) {
+      map['is_eaten'] = Variable<bool>(isEaten.value);
+    }
     return map;
   }
 
@@ -2156,7 +2204,8 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
           ..write('logDate: $logDate, ')
           ..write('foodId: $foodId, ')
           ..write('servings: $servings, ')
-          ..write('mealType: $mealType')
+          ..write('mealType: $mealType, ')
+          ..write('isEaten: $isEaten')
           ..write(')'))
         .toString();
   }
@@ -2840,6 +2889,53 @@ class $AlcoholLogsTable extends AlcoholLogs
     type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _proteinMeta = const VerificationMeta(
+    'protein',
+  );
+  @override
+  late final GeneratedColumn<double> protein = GeneratedColumn<double>(
+    'protein',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _carbsMeta = const VerificationMeta('carbs');
+  @override
+  late final GeneratedColumn<double> carbs = GeneratedColumn<double>(
+    'carbs',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _fatMeta = const VerificationMeta('fat');
+  @override
+  late final GeneratedColumn<double> fat = GeneratedColumn<double>(
+    'fat',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _isEatenMeta = const VerificationMeta(
+    'isEaten',
+  );
+  @override
+  late final GeneratedColumn<bool> isEaten = GeneratedColumn<bool>(
+    'is_eaten',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_eaten" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2848,6 +2944,10 @@ class $AlcoholLogsTable extends AlcoholLogs
     units,
     calories,
     volumeMl,
+    protein,
+    carbs,
+    fat,
+    isEaten,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2902,6 +3002,30 @@ class $AlcoholLogsTable extends AlcoholLogs
         volumeMl.isAcceptableOrUnknown(data['volume_ml']!, _volumeMlMeta),
       );
     }
+    if (data.containsKey('protein')) {
+      context.handle(
+        _proteinMeta,
+        protein.isAcceptableOrUnknown(data['protein']!, _proteinMeta),
+      );
+    }
+    if (data.containsKey('carbs')) {
+      context.handle(
+        _carbsMeta,
+        carbs.isAcceptableOrUnknown(data['carbs']!, _carbsMeta),
+      );
+    }
+    if (data.containsKey('fat')) {
+      context.handle(
+        _fatMeta,
+        fat.isAcceptableOrUnknown(data['fat']!, _fatMeta),
+      );
+    }
+    if (data.containsKey('is_eaten')) {
+      context.handle(
+        _isEatenMeta,
+        isEaten.isAcceptableOrUnknown(data['is_eaten']!, _isEatenMeta),
+      );
+    }
     return context;
   }
 
@@ -2935,6 +3059,22 @@ class $AlcoholLogsTable extends AlcoholLogs
         DriftSqlType.double,
         data['${effectivePrefix}volume_ml'],
       ),
+      protein: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}protein'],
+      )!,
+      carbs: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}carbs'],
+      )!,
+      fat: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}fat'],
+      )!,
+      isEaten: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_eaten'],
+      )!,
     );
   }
 
@@ -2951,6 +3091,10 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
   final double units;
   final double calories;
   final double? volumeMl;
+  final double protein;
+  final double carbs;
+  final double fat;
+  final bool isEaten;
   const AlcoholLog({
     required this.id,
     required this.logDate,
@@ -2958,6 +3102,10 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
     required this.units,
     required this.calories,
     this.volumeMl,
+    required this.protein,
+    required this.carbs,
+    required this.fat,
+    required this.isEaten,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2970,6 +3118,10 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
     if (!nullToAbsent || volumeMl != null) {
       map['volume_ml'] = Variable<double>(volumeMl);
     }
+    map['protein'] = Variable<double>(protein);
+    map['carbs'] = Variable<double>(carbs);
+    map['fat'] = Variable<double>(fat);
+    map['is_eaten'] = Variable<bool>(isEaten);
     return map;
   }
 
@@ -2983,6 +3135,10 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
       volumeMl: volumeMl == null && nullToAbsent
           ? const Value.absent()
           : Value(volumeMl),
+      protein: Value(protein),
+      carbs: Value(carbs),
+      fat: Value(fat),
+      isEaten: Value(isEaten),
     );
   }
 
@@ -2998,6 +3154,10 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
       units: serializer.fromJson<double>(json['units']),
       calories: serializer.fromJson<double>(json['calories']),
       volumeMl: serializer.fromJson<double?>(json['volumeMl']),
+      protein: serializer.fromJson<double>(json['protein']),
+      carbs: serializer.fromJson<double>(json['carbs']),
+      fat: serializer.fromJson<double>(json['fat']),
+      isEaten: serializer.fromJson<bool>(json['isEaten']),
     );
   }
   @override
@@ -3010,6 +3170,10 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
       'units': serializer.toJson<double>(units),
       'calories': serializer.toJson<double>(calories),
       'volumeMl': serializer.toJson<double?>(volumeMl),
+      'protein': serializer.toJson<double>(protein),
+      'carbs': serializer.toJson<double>(carbs),
+      'fat': serializer.toJson<double>(fat),
+      'isEaten': serializer.toJson<bool>(isEaten),
     };
   }
 
@@ -3020,6 +3184,10 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
     double? units,
     double? calories,
     Value<double?> volumeMl = const Value.absent(),
+    double? protein,
+    double? carbs,
+    double? fat,
+    bool? isEaten,
   }) => AlcoholLog(
     id: id ?? this.id,
     logDate: logDate ?? this.logDate,
@@ -3027,6 +3195,10 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
     units: units ?? this.units,
     calories: calories ?? this.calories,
     volumeMl: volumeMl.present ? volumeMl.value : this.volumeMl,
+    protein: protein ?? this.protein,
+    carbs: carbs ?? this.carbs,
+    fat: fat ?? this.fat,
+    isEaten: isEaten ?? this.isEaten,
   );
   AlcoholLog copyWithCompanion(AlcoholLogsCompanion data) {
     return AlcoholLog(
@@ -3036,6 +3208,10 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
       units: data.units.present ? data.units.value : this.units,
       calories: data.calories.present ? data.calories.value : this.calories,
       volumeMl: data.volumeMl.present ? data.volumeMl.value : this.volumeMl,
+      protein: data.protein.present ? data.protein.value : this.protein,
+      carbs: data.carbs.present ? data.carbs.value : this.carbs,
+      fat: data.fat.present ? data.fat.value : this.fat,
+      isEaten: data.isEaten.present ? data.isEaten.value : this.isEaten,
     );
   }
 
@@ -3047,14 +3223,28 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
           ..write('drinkType: $drinkType, ')
           ..write('units: $units, ')
           ..write('calories: $calories, ')
-          ..write('volumeMl: $volumeMl')
+          ..write('volumeMl: $volumeMl, ')
+          ..write('protein: $protein, ')
+          ..write('carbs: $carbs, ')
+          ..write('fat: $fat, ')
+          ..write('isEaten: $isEaten')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, logDate, drinkType, units, calories, volumeMl);
+  int get hashCode => Object.hash(
+    id,
+    logDate,
+    drinkType,
+    units,
+    calories,
+    volumeMl,
+    protein,
+    carbs,
+    fat,
+    isEaten,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3064,7 +3254,11 @@ class AlcoholLog extends DataClass implements Insertable<AlcoholLog> {
           other.drinkType == this.drinkType &&
           other.units == this.units &&
           other.calories == this.calories &&
-          other.volumeMl == this.volumeMl);
+          other.volumeMl == this.volumeMl &&
+          other.protein == this.protein &&
+          other.carbs == this.carbs &&
+          other.fat == this.fat &&
+          other.isEaten == this.isEaten);
 }
 
 class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
@@ -3074,6 +3268,10 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
   final Value<double> units;
   final Value<double> calories;
   final Value<double?> volumeMl;
+  final Value<double> protein;
+  final Value<double> carbs;
+  final Value<double> fat;
+  final Value<bool> isEaten;
   const AlcoholLogsCompanion({
     this.id = const Value.absent(),
     this.logDate = const Value.absent(),
@@ -3081,6 +3279,10 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
     this.units = const Value.absent(),
     this.calories = const Value.absent(),
     this.volumeMl = const Value.absent(),
+    this.protein = const Value.absent(),
+    this.carbs = const Value.absent(),
+    this.fat = const Value.absent(),
+    this.isEaten = const Value.absent(),
   });
   AlcoholLogsCompanion.insert({
     this.id = const Value.absent(),
@@ -3089,6 +3291,10 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
     required double units,
     required double calories,
     this.volumeMl = const Value.absent(),
+    this.protein = const Value.absent(),
+    this.carbs = const Value.absent(),
+    this.fat = const Value.absent(),
+    this.isEaten = const Value.absent(),
   }) : logDate = Value(logDate),
        drinkType = Value(drinkType),
        units = Value(units),
@@ -3100,6 +3306,10 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
     Expression<double>? units,
     Expression<double>? calories,
     Expression<double>? volumeMl,
+    Expression<double>? protein,
+    Expression<double>? carbs,
+    Expression<double>? fat,
+    Expression<bool>? isEaten,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -3108,6 +3318,10 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
       if (units != null) 'units': units,
       if (calories != null) 'calories': calories,
       if (volumeMl != null) 'volume_ml': volumeMl,
+      if (protein != null) 'protein': protein,
+      if (carbs != null) 'carbs': carbs,
+      if (fat != null) 'fat': fat,
+      if (isEaten != null) 'is_eaten': isEaten,
     });
   }
 
@@ -3118,6 +3332,10 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
     Value<double>? units,
     Value<double>? calories,
     Value<double?>? volumeMl,
+    Value<double>? protein,
+    Value<double>? carbs,
+    Value<double>? fat,
+    Value<bool>? isEaten,
   }) {
     return AlcoholLogsCompanion(
       id: id ?? this.id,
@@ -3126,6 +3344,10 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
       units: units ?? this.units,
       calories: calories ?? this.calories,
       volumeMl: volumeMl ?? this.volumeMl,
+      protein: protein ?? this.protein,
+      carbs: carbs ?? this.carbs,
+      fat: fat ?? this.fat,
+      isEaten: isEaten ?? this.isEaten,
     );
   }
 
@@ -3150,6 +3372,18 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
     if (volumeMl.present) {
       map['volume_ml'] = Variable<double>(volumeMl.value);
     }
+    if (protein.present) {
+      map['protein'] = Variable<double>(protein.value);
+    }
+    if (carbs.present) {
+      map['carbs'] = Variable<double>(carbs.value);
+    }
+    if (fat.present) {
+      map['fat'] = Variable<double>(fat.value);
+    }
+    if (isEaten.present) {
+      map['is_eaten'] = Variable<bool>(isEaten.value);
+    }
     return map;
   }
 
@@ -3161,7 +3395,11 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
           ..write('drinkType: $drinkType, ')
           ..write('units: $units, ')
           ..write('calories: $calories, ')
-          ..write('volumeMl: $volumeMl')
+          ..write('volumeMl: $volumeMl, ')
+          ..write('protein: $protein, ')
+          ..write('carbs: $carbs, ')
+          ..write('fat: $fat, ')
+          ..write('isEaten: $isEaten')
           ..write(')'))
         .toString();
   }
@@ -5828,6 +6066,7 @@ typedef $$FoodLogsTableCreateCompanionBuilder =
       required int foodId,
       Value<double> servings,
       required String mealType,
+      Value<bool> isEaten,
     });
 typedef $$FoodLogsTableUpdateCompanionBuilder =
     FoodLogsCompanion Function({
@@ -5836,6 +6075,7 @@ typedef $$FoodLogsTableUpdateCompanionBuilder =
       Value<int> foodId,
       Value<double> servings,
       Value<String> mealType,
+      Value<bool> isEaten,
     });
 
 final class $$FoodLogsTableReferences
@@ -5909,6 +6149,11 @@ class $$FoodLogsTableFilterComposer
 
   ColumnFilters<String> get mealType => $composableBuilder(
     column: $table.mealType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isEaten => $composableBuilder(
+    column: $table.isEaten,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5990,6 +6235,11 @@ class $$FoodLogsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isEaten => $composableBuilder(
+    column: $table.isEaten,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$FoodsTableOrderingComposer get foodId {
     final $$FoodsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -6034,6 +6284,9 @@ class $$FoodLogsTableAnnotationComposer
 
   GeneratedColumn<String> get mealType =>
       $composableBuilder(column: $table.mealType, builder: (column) => column);
+
+  GeneratedColumn<bool> get isEaten =>
+      $composableBuilder(column: $table.isEaten, builder: (column) => column);
 
   $$FoodsTableAnnotationComposer get foodId {
     final $$FoodsTableAnnotationComposer composer = $composerBuilder(
@@ -6117,12 +6370,14 @@ class $$FoodLogsTableTableManager
                 Value<int> foodId = const Value.absent(),
                 Value<double> servings = const Value.absent(),
                 Value<String> mealType = const Value.absent(),
+                Value<bool> isEaten = const Value.absent(),
               }) => FoodLogsCompanion(
                 id: id,
                 logDate: logDate,
                 foodId: foodId,
                 servings: servings,
                 mealType: mealType,
+                isEaten: isEaten,
               ),
           createCompanionCallback:
               ({
@@ -6131,12 +6386,14 @@ class $$FoodLogsTableTableManager
                 required int foodId,
                 Value<double> servings = const Value.absent(),
                 required String mealType,
+                Value<bool> isEaten = const Value.absent(),
               }) => FoodLogsCompanion.insert(
                 id: id,
                 logDate: logDate,
                 foodId: foodId,
                 servings: servings,
                 mealType: mealType,
+                isEaten: isEaten,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -6813,6 +7070,10 @@ typedef $$AlcoholLogsTableCreateCompanionBuilder =
       required double units,
       required double calories,
       Value<double?> volumeMl,
+      Value<double> protein,
+      Value<double> carbs,
+      Value<double> fat,
+      Value<bool> isEaten,
     });
 typedef $$AlcoholLogsTableUpdateCompanionBuilder =
     AlcoholLogsCompanion Function({
@@ -6822,6 +7083,10 @@ typedef $$AlcoholLogsTableUpdateCompanionBuilder =
       Value<double> units,
       Value<double> calories,
       Value<double?> volumeMl,
+      Value<double> protein,
+      Value<double> carbs,
+      Value<double> fat,
+      Value<bool> isEaten,
     });
 
 class $$AlcoholLogsTableFilterComposer
@@ -6860,6 +7125,26 @@ class $$AlcoholLogsTableFilterComposer
 
   ColumnFilters<double> get volumeMl => $composableBuilder(
     column: $table.volumeMl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get protein => $composableBuilder(
+    column: $table.protein,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get carbs => $composableBuilder(
+    column: $table.carbs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get fat => $composableBuilder(
+    column: $table.fat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isEaten => $composableBuilder(
+    column: $table.isEaten,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -6902,6 +7187,26 @@ class $$AlcoholLogsTableOrderingComposer
     column: $table.volumeMl,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<double> get protein => $composableBuilder(
+    column: $table.protein,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get carbs => $composableBuilder(
+    column: $table.carbs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get fat => $composableBuilder(
+    column: $table.fat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isEaten => $composableBuilder(
+    column: $table.isEaten,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$AlcoholLogsTableAnnotationComposer
@@ -6930,6 +7235,18 @@ class $$AlcoholLogsTableAnnotationComposer
 
   GeneratedColumn<double> get volumeMl =>
       $composableBuilder(column: $table.volumeMl, builder: (column) => column);
+
+  GeneratedColumn<double> get protein =>
+      $composableBuilder(column: $table.protein, builder: (column) => column);
+
+  GeneratedColumn<double> get carbs =>
+      $composableBuilder(column: $table.carbs, builder: (column) => column);
+
+  GeneratedColumn<double> get fat =>
+      $composableBuilder(column: $table.fat, builder: (column) => column);
+
+  GeneratedColumn<bool> get isEaten =>
+      $composableBuilder(column: $table.isEaten, builder: (column) => column);
 }
 
 class $$AlcoholLogsTableTableManager
@@ -6969,6 +7286,10 @@ class $$AlcoholLogsTableTableManager
                 Value<double> units = const Value.absent(),
                 Value<double> calories = const Value.absent(),
                 Value<double?> volumeMl = const Value.absent(),
+                Value<double> protein = const Value.absent(),
+                Value<double> carbs = const Value.absent(),
+                Value<double> fat = const Value.absent(),
+                Value<bool> isEaten = const Value.absent(),
               }) => AlcoholLogsCompanion(
                 id: id,
                 logDate: logDate,
@@ -6976,6 +7297,10 @@ class $$AlcoholLogsTableTableManager
                 units: units,
                 calories: calories,
                 volumeMl: volumeMl,
+                protein: protein,
+                carbs: carbs,
+                fat: fat,
+                isEaten: isEaten,
               ),
           createCompanionCallback:
               ({
@@ -6985,6 +7310,10 @@ class $$AlcoholLogsTableTableManager
                 required double units,
                 required double calories,
                 Value<double?> volumeMl = const Value.absent(),
+                Value<double> protein = const Value.absent(),
+                Value<double> carbs = const Value.absent(),
+                Value<double> fat = const Value.absent(),
+                Value<bool> isEaten = const Value.absent(),
               }) => AlcoholLogsCompanion.insert(
                 id: id,
                 logDate: logDate,
@@ -6992,6 +7321,10 @@ class $$AlcoholLogsTableTableManager
                 units: units,
                 calories: calories,
                 volumeMl: volumeMl,
+                protein: protein,
+                carbs: carbs,
+                fat: fat,
+                isEaten: isEaten,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

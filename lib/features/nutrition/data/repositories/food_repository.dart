@@ -7,14 +7,10 @@ import '../../../core/database/database.dart';
 /// 1. Local Database
 /// 2. OpenFoodFacts API
 /// 3. USDA FoodData Central (future)
-import '../../../core/sync/base_repository.dart';
+class FoodRepository {
+  final AppDatabase db;
 
-/// Repository for food search with fallback chain:
-/// 1. Local Database
-/// 2. OpenFoodFacts API
-/// 3. USDA FoodData Central (future)
-class FoodRepository extends BaseRepository {
-  FoodRepository(super.db);
+  FoodRepository(this.db);
 
   /// Search foods by name (local database first, then API)
   Future<List<FoodSearchResult>> searchFoods(String query) async {
@@ -39,26 +35,28 @@ class FoodRepository extends BaseRepository {
   }
 
   /// Lookup food by barcode
-  Future<FoodSearchResult?> lookupBarcode(String barcode) async {
+  Future<List<FoodSearchResult>> lookupBarcode(String barcode) async {
+    final results = <FoodSearchResult>[];
+
     // 1. Check local database first
     final localFood = await _lookupLocalBarcode(barcode);
     if (localFood != null) {
-      return FoodSearchResult(food: localFood, source: FoodSource.local);
+      results.add(FoodSearchResult(food: localFood, source: FoodSource.local));
+      return results;
     }
     
     // 2. Search OpenFoodFacts
     final apiFood = await _lookupOpenFoodFactsBarcode(barcode);
     if (apiFood != null) {
-      return apiFood;
+      // Return as a list
+      return [apiFood];
     }
     
-    // 3. Not found
-    return null;
+    return [];
   }
 
   /// Search local database
   Future<List<Food>> _searchLocalDatabase(String query) async {
-    final searchTerm = '%${query.toLowerCase()}%';
     return await (db.select(db.foods)
       ..where((t) => t.name.contains(query))
       ..limit(10))
@@ -168,26 +166,22 @@ class FoodRepository extends BaseRepository {
 
   /// Save a food to local database (for user contributions or caching API results)
   Future<int> saveFood(Food food) async {
-    return performWithSync(
-      action: 'create',
-      table: 'foods',
-      performWrite: () => db.into(db.foods).insert(
-        FoodsCompanion.insert(
-          name: food.name,
-          barcode: Value(food.barcode),
-          calories: food.calories,
-          protein: food.protein,
-          carbs: food.carbs,
-          fat: food.fat,
-          fiber: Value(food.fiber),
-          sugar: Value(food.sugar),
-          servingSize: Value(food.servingSize),
-          servingUnit: Value(food.servingUnit),
-          source: Value(food.source),
-          imageUrl: Value(food.imageUrl),
-          verified: Value(food.verified),
-          createdBy: Value(food.createdBy),
-        ),
+    return db.into(db.foods).insert(
+      FoodsCompanion.insert(
+        name: food.name,
+        barcode: Value(food.barcode),
+        calories: food.calories,
+        protein: food.protein,
+        carbs: food.carbs,
+        fat: food.fat,
+        fiber: Value(food.fiber),
+        sugar: Value(food.sugar),
+        servingSize: Value(food.servingSize),
+        servingUnit: Value(food.servingUnit),
+        source: Value(food.source),
+        imageUrl: Value(food.imageUrl),
+        verified: Value(food.verified),
+        createdBy: Value(food.createdBy),
       ),
     );
   }
@@ -199,16 +193,12 @@ class FoodRepository extends BaseRepository {
     required String mealType,
     DateTime? logDate,
   }) async {
-    return performWithSync(
-      action: 'create',
-      table: 'food_logs',
-      performWrite: () => db.into(db.foodLogs).insert(
-        FoodLogsCompanion.insert(
-          logDate: logDate ?? DateTime.now(),
-          foodId: foodId,
-          servings: Value(servings),
-          mealType: mealType,
-        ),
+    return db.into(db.foodLogs).insert(
+      FoodLogsCompanion.insert(
+        logDate: logDate ?? DateTime.now(),
+        foodId: foodId,
+        servings: Value(servings),
+        mealType: mealType,
       ),
     );
   }
@@ -261,15 +251,8 @@ class FoodRepository extends BaseRepository {
     );
   }
   /// Delete a food log
-  Future<void> deleteLog(int id) {
-    return performWithSync(
-      action: 'delete',
-      table: 'food_logs',
-      performWrite: () async {
-        await (db.delete(db.foodLogs)..where((tbl) => tbl.id.equals(id))).go();
-        return id;
-      },
-    );
+  Future<void> deleteLog(int id) async {
+    await (db.delete(db.foodLogs)..where((tbl) => tbl.id.equals(id))).go();
   }
 }
 

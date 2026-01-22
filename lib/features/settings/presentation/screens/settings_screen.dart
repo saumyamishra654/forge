@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:drift/drift.dart' as drift; // Helper for types if needed
+// Helper for types if needed
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/backup/backup_service.dart';
 import '../../../../main.dart'; // To access databaseProvider
+import 'manage_exercises_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -94,6 +95,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 32),
               
+              Text(
+                'Database',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 16),
+
+              _buildActionCard(
+                icon: Icons.fitness_center_rounded,
+                title: 'Manage Exercises',
+                subtitle: 'Add, edit, or fix muscle groups',
+                color: AppTheme.primary,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ManageExercisesScreen()),
+                ),
+              ),
+              
+              const SizedBox(height: 32),
+
               Text(
                 'Data Management',
                 style: Theme.of(context).textTheme.titleMedium,

@@ -191,22 +191,23 @@ class _AlcoholLogSheetState extends ConsumerState<AlcoholLogSheet> {
   final _unitsController = TextEditingController(text: '1');
   final _volumeController = TextEditingController(text: '330');
   
-  // (type, label, emoji, kcal per 100ml, default ml per drink)
+  // (type, label, emoji, kcal/100ml, default ml, protein/100ml, carbs/100ml, fat/100ml)
   final _drinkTypes = [
-    ('beer', 'Beer', '🍺', 43.0, 330.0),
-    ('wine', 'Wine', '🍷', 83.0, 150.0),
-    ('whiskey', 'Whiskey', '🥃', 250.0, 30.0),
-    ('vodka', 'Vodka', '🍸', 231.0, 30.0),
-    ('cocktail', 'Cocktail', '🍹', 150.0, 200.0),
-    ('other', 'Other', '🧉', 100.0, 100.0),
+    ('beer', 'Beer', 43.0, 330.0, 0.5, 3.6, 0.0),      // Beer has carbs!
+    ('wine', 'Wine', 83.0, 150.0, 0.1, 2.6, 0.0),      // Wine has some carbs
+    ('whiskey', 'Whiskey', 250.0, 30.0, 0.0, 0.0, 0.0), // Spirits = no macros
+    ('vodka', 'Vodka', 231.0, 30.0, 0.0, 0.0, 0.0),
+    ('cocktail', 'Cocktail', 150.0, 200.0, 0.0, 15.0, 0.0), // Cocktails often have sugar
+    ('other', 'Other', 100.0, 100.0, 0.0, 5.0, 0.0),
   ];
 
   @override
   Widget build(BuildContext context) {
     final selectedDrink = _drinkTypes.firstWhere((d) => d.$1 == _selectedType);
     final units = double.tryParse(_unitsController.text) ?? 1;
-    final volume = double.tryParse(_volumeController.text) ?? selectedDrink.$5;
-    final calories = (selectedDrink.$4 * volume / 100 * units).round();
+    final volume = double.tryParse(_volumeController.text) ?? selectedDrink.$4;
+    final calories = (selectedDrink.$3 * volume / 100 * units).round();
+    final carbs = (selectedDrink.$6 * volume / 100 * units);
     
     return Container(
       padding: EdgeInsets.only(
@@ -253,7 +254,7 @@ class _AlcoholLogSheetState extends ConsumerState<AlcoholLogSheet> {
                   onTap: () {
                     setState(() {
                       _selectedType = drink.$1;
-                      _volumeController.text = drink.$5.toInt().toString();
+                      _volumeController.text = drink.$4.toInt().toString();
                     });
                   },
                   child: Container(
@@ -267,18 +268,11 @@ class _AlcoholLogSheetState extends ConsumerState<AlcoholLogSheet> {
                           ? Border.all(color: Colors.amber)
                           : null,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(drink.$3, style: const TextStyle(fontSize: 20)),
-                        const SizedBox(width: 8),
-                        Text(
-                          drink.$2,
-                          style: TextStyle(
-                            color: isSelected ? Colors.amber : AppTheme.textSecondary,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      drink.$2,
+                      style: TextStyle(
+                        color: isSelected ? Colors.amber : AppTheme.textSecondary,
+                      ),
                     ),
                   ),
                 );
@@ -326,7 +320,7 @@ class _AlcoholLogSheetState extends ConsumerState<AlcoholLogSheet> {
             
             const SizedBox(height: 20),
             
-            // Calorie Display
+            // Calorie + Carbs Display
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -334,15 +328,25 @@ class _AlcoholLogSheetState extends ConsumerState<AlcoholLogSheet> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  const Icon(Icons.local_fire_department, color: Colors.amber),
-                  const SizedBox(width: 8),
-                  Text(
-                    '$calories kcal',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: Colors.amber,
-                    ),
+                  Column(
+                    children: [
+                      Text(
+                        '$calories',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.amber),
+                      ),
+                      Text('kcal', style: Theme.of(context).textTheme.bodySmall),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        '${carbs.toStringAsFixed(1)}g',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: AppTheme.carbsColor),
+                      ),
+                      Text('carbs', style: Theme.of(context).textTheme.bodySmall),
+                    ],
                   ),
                 ],
               ),
@@ -371,8 +375,13 @@ class _AlcoholLogSheetState extends ConsumerState<AlcoholLogSheet> {
   Future<void> _logAlcohol() async {
     final selectedDrink = _drinkTypes.firstWhere((d) => d.$1 == _selectedType);
     final units = double.tryParse(_unitsController.text) ?? 1;
-    final volume = double.tryParse(_volumeController.text) ?? selectedDrink.$5;
-    final calories = (selectedDrink.$4 * volume / 100 * units);
+    final volume = double.tryParse(_volumeController.text) ?? selectedDrink.$4;
+    final ratio = volume / 100 * units;
+    
+    final calories = selectedDrink.$3 * ratio;
+    final protein = selectedDrink.$5 * ratio;
+    final carbs = selectedDrink.$6 * ratio;
+    final fat = selectedDrink.$7 * ratio;
     
     final db = ref.read(databaseProvider);
     await db.into(db.alcoholLogs).insert(
@@ -382,13 +391,16 @@ class _AlcoholLogSheetState extends ConsumerState<AlcoholLogSheet> {
         units: units,
         calories: calories,
         volumeMl: Value(volume),
+        protein: Value(protein),
+        carbs: Value(carbs),
+        fat: Value(fat),
       ),
     );
 
     if (mounted) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${selectedDrink.$2} logged (+${calories.toInt()} kcal)')),
+        SnackBar(content: Text('${selectedDrink.$2} logged (+${calories.toInt()} kcal, ${carbs.toStringAsFixed(1)}g carbs)')),
       );
     }
   }

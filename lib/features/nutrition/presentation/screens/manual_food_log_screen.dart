@@ -23,6 +23,36 @@ class _ManualFoodLogScreenState extends ConsumerState<ManualFoodLogScreen> {
   
   String _selectedMealType = 'Snack';
   bool _isSaving = false;
+  bool _caloriesManuallyEdited = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-calculate calories when macros change
+    _proteinController.addListener(_autoCalculateCalories);
+    _carbsController.addListener(_autoCalculateCalories);
+    _fatController.addListener(_autoCalculateCalories);
+    _caloriesController.addListener(() {
+      // If user manually types in calories, stop auto-calculating
+      if (_caloriesController.text.isNotEmpty) {
+        _caloriesManuallyEdited = true;
+      }
+    });
+  }
+
+  void _autoCalculateCalories() {
+    if (_caloriesManuallyEdited) return;
+    
+    final protein = double.tryParse(_proteinController.text) ?? 0;
+    final carbs = double.tryParse(_carbsController.text) ?? 0;
+    final fat = double.tryParse(_fatController.text) ?? 0;
+    
+    if (protein > 0 || carbs > 0 || fat > 0) {
+      final calculatedCalories = (protein * 4) + (carbs * 4) + (fat * 9);
+      _caloriesController.text = calculatedCalories.toStringAsFixed(0);
+      _caloriesManuallyEdited = false; // Reset since we set it programmatically
+    }
+  }
 
   @override
   void dispose() {
@@ -60,8 +90,8 @@ class _ManualFoodLogScreenState extends ConsumerState<ManualFoodLogScreen> {
         ),
       );
 
-      // 2. Create the Log entry
-      await db.into(db.foodLogs).insert(
+      // 2. Create the Log entry and capture its ID
+      final foodLogId = await db.into(db.foodLogs).insert(
         FoodLogsCompanion.insert(
           logDate: now,
           foodId: foodId,
@@ -108,6 +138,7 @@ class _ManualFoodLogScreenState extends ConsumerState<ManualFoodLogScreen> {
             categoryId: categoryId,
             amount: cost,
             description: drift.Value('Food: ${_nameController.text.trim().isEmpty ? "Quick Entry" : _nameController.text.trim()}'),
+            linkedFoodLogId: drift.Value(foodLogId),
           )
         );
       }

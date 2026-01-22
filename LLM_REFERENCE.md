@@ -112,35 +112,68 @@ forge/
 
 ---
 
-## Recent Features (2026-01-20)
+## Recent Features (2026-01-22)
 
-### ✅ Multi-Muscle Exercise Selection
-- Exercises can now have multiple muscle groups (comma-separated in `muscleGroup`)
-- UI uses `FilterChip` widgets for multi-selection
-- Volume is distributed evenly across selected muscles in breakdown
+### Food Planner Mode (NEW)
+- **Toggle**: Button in Nutrition header switches between logging and planning modes
+- **Split View**: In planning mode, macro ring splits into Target vs Actual cards
+- **Checkboxes**: Each food item shows checkbox to mark as eaten/not eaten
+- **Visual Feedback**: Uneaten items appear muted with strikethrough
+- **Database**: Schema v3 added `isEaten` column to `food_logs` table
 
-### ✅ Cardio Types (LISS/HIIT)
-- New `cardioType` column on `exercises` table
-- `ChoiceChip` selection when creating cardio exercises
+### PWA & Web Support
+- **Architecture**: Web-compatible database layout using WASM/IndexedDB.
+- **Deployment**: Automatic GitHub Actions workflow (`deploy.yml`) to GitHub Pages.
+- **Data Persistence**: Uses `idb_shim` for consistent storage on Web.
 
-### ✅ Workout Type Detection
-- Automatically detects: Push, Pull, Legs, Upper, Full Body, Mixed
-- Logic: Push+Pull = Upper, Push+Pull+Legs = Full Body
+### Cross-Platform Backup & Restore
+- **Export**: Full JSON dump of all tables (exercises, logs, foods, settings).
+- **Import**: Type-safe restoration using `insertOnConflictUpdate`.
+- **Method**:
+  - **Native**: `Share.shareXFiles` (AirDrop, Save to Files, etc.)
+  - **Web**: Browser file download (`html.AnchorElement`).
+  - **Input**: `FilePicker` works on both platforms.
 
-### ✅ Edit Food Logs
-- Tap any food item in nutrition screen to edit
-- Change servings, meal type, or delete
-- Live macro preview in dialog
+### Home Dashboard 2.0
+- **7-Day Averages**: Automatically tracks and displays weekly average:
+  - Calories Eaten (Nutrition)
+  - Calories Burnt (Exercise - derived)
+  - Daily Spending (Finance)
+- Real-time weekly stats calculation on `_loadHomeData`.
 
-### ✅ Dynamic Home Insights
-- Shows calculated metrics based on logged data:
-  - ₹ per gram of protein
-  - ₹ per 100 calories
-  - Calories per gram of protein
+### Exercise Updates
+- **Sets vs Volume**: "Body Part Volume" changed to "Sets by Muscle Group".
+- **Logic Change**: Sets are fully attributed to each targeted muscle (Bench 3 sets = Chest 3 sets + Triceps 3 sets).
+- **Database**: Migration v2 added `cardio_type` column.
 
-### ✅ Manual Workout Timer
-- Duration is manually entered in minutes (not auto-calculated)
-- Better for logging past workouts
+### Finance Deletion
+- Swipe-to-delete implemented on expense list.
+- Undo functionality via SnackBar.
+
+### Settings: Exercise Management
+- **Manage Exercises Screen**: View, search, add, and edit exercises from Settings.
+- **ExerciseEditorDialog**: Create custom exercises or fix muscle group assignments.
+- **Database**: Supports adding/editing name, category, muscle groups, and cardio types (LISS/HIIT).
+
+### Insights Page 2.0
+- **InsightsHomeScreen**: Dedicated screen accessible from "Insight of the Day" card on Home.
+- **Time Filters**: 7 Days / 30 Days / All Time toggle.
+- **Finance Metrics**: Rs/100 kcal, Rs/10g protein.
+- **Food Efficiency**: Best Protein/Rs, Best Calories/Rs (requires food cost entry).
+- **Macro Breakdown**: Highest/Lowest protein % foods.
+- **Auto-Calories**: Calories auto-calculated from macros (P*4 + C*4 + F*9) in food log form.
+
+---
+
+## Architectural Considerations for Future Changes
+
+### 🔴 Firebase/Cloud Sync (DEPRECATED)
+*Previous plan for Firebase sync has been replaced by the simpler Import/Export model for now.*
+
+### 🟡 Cross-Platform File Handling
+- **Constraint**: `dart:io` cannot be imported in web-compiled code.
+- **Solution**: Use conditional imports (`backup_helper.dart` -> `backup_helper_web.dart` / `backup_helper_native.dart`).
+- **Data Passing**: Always use `Uint8List` for file data in shared service layers.
 
 ---
 

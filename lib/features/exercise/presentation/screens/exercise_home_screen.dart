@@ -51,7 +51,7 @@ class ExerciseHomeScreen extends ConsumerStatefulWidget {
 
 class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
   List<WorkoutDay> _workoutHistory = [];
-  Map<String, double> _bodyPartVolumes = {};
+  Map<String, int> _bodyPartSets = {}; // Changed from volume to sets
   double _weeklyVolume = 0;
   int _weeklyWorkouts = 0;
   int _weeklySets = 0;
@@ -111,7 +111,7 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
     
     // Build workout days
     final List<WorkoutDay> workouts = [];
-    final Map<String, double> bodyPartVol = {};
+    final Map<String, int> bodyPartSets = {}; // Track sets per muscle group
     double weekVol = 0;
     int weekSets = 0;
     
@@ -152,15 +152,16 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
           volume: exVolume,
         ));
         
-        // Track body part volume by muscle group (for the last 7 days)
+        // Track body part sets by muscle group (for the last 7 days)
         if (date.isAfter(weekAgo)) {
           // Parse comma-separated muscle groups
           final muscles = exercise.muscleGroup?.split(',') ?? [exercise.category];
-          final perMuscleVol = exVolume / muscles.length; // Distribute volume evenly
+          final setsForExercise = exEntry.value.fold<int>(0, (sum, log) => sum + (log.sets ?? 1));
+          // Each muscle gets the full set count (if you bench 3 sets, chest gets 3, shoulders gets 3)
           for (var muscle in muscles) {
             muscle = muscle.trim();
             if (muscle.isNotEmpty) {
-              bodyPartVol[muscle] = (bodyPartVol[muscle] ?? 0) + perMuscleVol;
+              bodyPartSets[muscle] = (bodyPartSets[muscle] ?? 0) + setsForExercise;
             }
           }
         }
@@ -189,7 +190,7 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
     
     setState(() {
       _workoutHistory = workouts;
-      _bodyPartVolumes = bodyPartVol;
+      _bodyPartSets = bodyPartSets;
       _weeklyVolume = weekVol;
       _weeklyWorkouts = workouts.where((w) => w.date.isAfter(weekAgo)).length;
       _weeklySets = weekSets;
@@ -264,7 +265,7 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
                     const SizedBox(height: 24),
                     
                     // Body Part Volume
-                    if (_bodyPartVolumes.isNotEmpty) ...[
+                    if (_bodyPartSets.isNotEmpty) ...[
                       _buildBodyPartVolume(),
                       const SizedBox(height: 24),
                     ],
@@ -477,14 +478,14 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
       'Cardio': Colors.pink.shade400,
     };
 
-    final sortedParts = _bodyPartVolumes.entries.toList()
+    final sortedParts = _bodyPartSets.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Volume by Body Part',
+          'Sets by Muscle Group',
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 12),
@@ -538,7 +539,7 @@ class _ExerciseHomeScreenState extends ConsumerState<ExerciseHomeScreen> {
                     SizedBox(
                       width: 60,
                       child: Text(
-                        '${(entry.value / 1000).toStringAsFixed(1)}t',
+                        '${entry.value} sets',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           color: color,
                           fontWeight: FontWeight.w600,

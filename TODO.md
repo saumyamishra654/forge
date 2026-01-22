@@ -1,11 +1,17 @@
 # TODO - Feature Backlog
 
-> Last updated: 2026-01-20
+> Last updated: 2026-01-22
 
 ---
 
-## ✅ Recently Completed
+## Recently Completed
 
+- [x] **Food Planner Mode** (Target/Actual split view, checkboxes for eaten state)
+- [x] **Cross-Platform Backup & Restore** (JSON/Share Sheet)
+- [x] **PWA Deployment** (Web Support)
+- [x] **Home Dashboard 2.0** (7-Day Averages & Real-time stats)
+- [x] **Finance deletion** (Swipe-to-delete with undo)
+- [x] **Set-based muscle tracking** (Sets by Muscle Group)
 - [x] Body tracking (weight, body fat) with trends
 - [x] Multi-muscle exercise selection (comma-separated)
 - [x] LISS/HIIT cardio classification
@@ -14,7 +20,7 @@
 - [x] Edit exercise logs
 - [x] Manual workout duration input
 - [x] Backdate workouts (log past dates)
-- [x] Dynamic home screen insights (₹/protein, ₹/calorie)
+- [x] Dynamic home screen insights (Rs/protein, Rs/calorie)
 - [x] Dark brown premium theme
 
 ---
