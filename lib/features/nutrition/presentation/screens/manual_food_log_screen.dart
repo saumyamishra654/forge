@@ -6,7 +6,8 @@ import '../../../../main.dart';
 import '../../../../core/database/database.dart';
 
 class ManualFoodLogScreen extends ConsumerStatefulWidget {
-  const ManualFoodLogScreen({super.key});
+  final DateTime? initialDate;
+  const ManualFoodLogScreen({super.key, this.initialDate});
 
   @override
   ConsumerState<ManualFoodLogScreen> createState() => _ManualFoodLogScreenState();
@@ -72,7 +73,7 @@ class _ManualFoodLogScreenState extends ConsumerState<ManualFoodLogScreen> {
 
     try {
       final db = ref.read(databaseProvider);
-      final now = DateTime.now();
+      final logDate = widget.initialDate ?? DateTime.now();
 
       // 1. Create the Food entry
       final foodId = await db.into(db.foods).insert(
@@ -93,7 +94,7 @@ class _ManualFoodLogScreenState extends ConsumerState<ManualFoodLogScreen> {
       // 2. Create the Log entry and capture its ID
       final foodLogId = await db.into(db.foodLogs).insert(
         FoodLogsCompanion.insert(
-          logDate: now,
+          logDate: logDate,
           foodId: foodId,
           mealType: _selectedMealType,
           servings: const drift.Value(1),
@@ -134,7 +135,7 @@ class _ManualFoodLogScreenState extends ConsumerState<ManualFoodLogScreen> {
 
         await db.into(db.expenses).insert(
           ExpensesCompanion.insert(
-            logDate: now,
+            logDate: logDate,
             categoryId: categoryId,
             amount: cost,
             description: drift.Value('Food: ${_nameController.text.trim().isEmpty ? "Quick Entry" : _nameController.text.trim()}'),

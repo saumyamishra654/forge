@@ -7,7 +7,8 @@ import '../../../../main.dart';
 
 /// Supplement logging bottom sheet
 class SupplementLogSheet extends ConsumerStatefulWidget {
-  const SupplementLogSheet({super.key});
+  final DateTime? initialDate;
+  const SupplementLogSheet({super.key, this.initialDate});
 
   @override
   ConsumerState<SupplementLogSheet> createState() => _SupplementLogSheetState();
@@ -157,7 +158,7 @@ class _SupplementLogSheetState extends ConsumerState<SupplementLogSheet> {
     final db = ref.read(databaseProvider);
     await db.into(db.supplementLogs).insert(
       SupplementLogsCompanion.insert(
-        logDate: DateTime.now(),
+        logDate: widget.initialDate ?? DateTime.now(),
         supplementId: _selectedSupplement!.id,
         dosage: dosage,
       ),
@@ -180,7 +181,8 @@ class _SupplementLogSheetState extends ConsumerState<SupplementLogSheet> {
 
 /// Alcohol logging bottom sheet
 class AlcoholLogSheet extends ConsumerStatefulWidget {
-  const AlcoholLogSheet({super.key});
+  final DateTime? initialDate;
+  const AlcoholLogSheet({super.key, this.initialDate});
 
   @override
   ConsumerState<AlcoholLogSheet> createState() => _AlcoholLogSheetState();
@@ -386,7 +388,7 @@ class _AlcoholLogSheetState extends ConsumerState<AlcoholLogSheet> {
     final db = ref.read(databaseProvider);
     await db.into(db.alcoholLogs).insert(
       AlcoholLogsCompanion.insert(
-        logDate: DateTime.now(),
+        logDate: widget.initialDate ?? DateTime.now(),
         drinkType: _selectedType,
         units: units,
         calories: calories,

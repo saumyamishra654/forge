@@ -875,7 +875,7 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
   void _showAddFoodSheet(BuildContext context) async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const ManualFoodLogScreen()),
+      MaterialPageRoute(builder: (_) => ManualFoodLogScreen(initialDate: _selectedDate)),
     );
     
     if (result == true) {
@@ -888,7 +888,7 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const SupplementLogSheet(),
+      builder: (context) => SupplementLogSheet(initialDate: _selectedDate),
     );
     _loadDailyLogs(); // Refresh after closing
   }
@@ -898,7 +898,7 @@ class _NutritionHomeScreenState extends ConsumerState<NutritionHomeScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const AlcoholLogSheet(),
+      builder: (context) => AlcoholLogSheet(initialDate: _selectedDate),
     );
     _loadDailyLogs(); // Refresh after closing
   }

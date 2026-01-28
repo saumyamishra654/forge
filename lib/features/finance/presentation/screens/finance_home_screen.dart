@@ -6,6 +6,7 @@ import 'package:drift/drift.dart' show Value, innerJoin, OrderingTerm, OrderingM
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/database/database.dart';
 import '../../../../main.dart';
+import '../widgets/edit_expense_dialog.dart';
 
 class FinanceHomeScreen extends ConsumerStatefulWidget {
   const FinanceHomeScreen({super.key});
@@ -316,77 +317,115 @@ class _FinanceHomeScreenState extends ConsumerState<FinanceHomeScreen> {
   Widget _buildExpenseList() {
     return Column(
       children: _recentExpenses.map((e) {
-        return Dismissible(
-          key: ValueKey(e.expense.id),
-          direction: DismissDirection.endToStart,
-          onDismissed: (_) => _deleteExpense(e),
-          background: Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.only(right: 20),
-            decoration: BoxDecoration(
-              color: Colors.red.shade400,
-              borderRadius: BorderRadius.circular(12),
+        return InkWell(
+          onTap: () => _editExpense(e),
+          borderRadius: BorderRadius.circular(12),
+          child: Dismissible(
+            key: ValueKey(e.expense.id),
+            direction: DismissDirection.endToStart,
+            onDismissed: (_) => _deleteExpense(item: e, silent: true),
+            background: Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(right: 20),
+              decoration: BoxDecoration(
+                color: Colors.red.shade400,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.centerRight,
+              child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
             ),
-            alignment: Alignment.centerRight,
-            child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
-          ),
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppTheme.card,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.financeColor.withValues(alpha:0.15),
-                    borderRadius: BorderRadius.circular(8),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.card,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.financeColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(e.category.icon, style: const TextStyle(fontSize: 18)),
                   ),
-                  child: Text(e.category.icon, style: const TextStyle(fontSize: 18)),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(e.category.name, style: Theme.of(context).textTheme.titleSmall),
+                        if (e.expense.description != null)
+                          Text(e.expense.description!, style: Theme.of(context).textTheme.bodySmall),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(e.category.name, style: Theme.of(context).textTheme.titleSmall),
-                      if (e.expense.description != null)
-                        Text(e.expense.description!, style: Theme.of(context).textTheme.bodySmall),
+                      Text('₹${e.expense.amount.toStringAsFixed(0)}',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppTheme.financeColor)),
+                      Text(_formatDate(e.expense.logDate), style: Theme.of(context).textTheme.bodySmall),
                     ],
                   ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text('₹${e.expense.amount.toStringAsFixed(0)}', style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppTheme.financeColor)),
-                    Text(_formatDate(e.expense.logDate), style: Theme.of(context).textTheme.bodySmall),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
       }).toList(),
     ).animate().fadeIn(delay: 300.ms, duration: 400.ms);
   }
-  
-  Future<void> _deleteExpense(ExpenseWithCategory item) async {
+
+  Future<void> _editExpense(ExpenseWithCategory item) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => EditExpenseDialog(item: item),
+    );
+
+    if (result == true) {
+      _loadFinancialData();
+    }
+  }
+
+  Future<void> _deleteExpense({required ExpenseWithCategory item, bool silent = false}) async {
     final db = ref.read(databaseProvider);
-    
+
+    if (!silent) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Delete Expense?'),
+          content: const Text('This action cannot be undone.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Delete'),
+            ),
+          ],
+        ),
+      );
+      if (confirm != true) {
+        _loadFinancialData(); // Refresh to restore the item in the list if it was a swipe (though this isn't called from swipe)
+        return;
+      }
+    }
+
     // Optimistically update UI
     setState(() {
       _recentExpenses.remove(item);
-      // Re-calculate totals locally for immediate feedback?
-      // For now, let's just trigger a reload after animation or let the user see the visual removal
-      // A full reload might be jarring, but re-calculation is safer.
     });
 
     // Delete from DB
     await (db.delete(db.expenses)..where((t) => t.id.equals(item.expense.id))).go();
-    
+
     // Refresh stats
     _loadFinancialData();
 
