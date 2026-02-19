@@ -1,7 +1,7 @@
 # Forge - LLM Reference Document
 
 > **Purpose**: Single source of truth for AI assistants working on this codebase.
-> **Last updated**: 2026-01-20
+> **Last updated**: 2026-01-22
 
 ## Quick Links
 - [Project Structure](#project-structure)
@@ -76,10 +76,10 @@ forge/
 | Table | Key Columns | Notes |
 |-------|-------------|-------|
 | `foods` | id, name, barcode, calories, protein, carbs, fat, servingSize, source | source: custom, openfoodfacts, usda |
-| `food_logs` | id, logDate, foodId, servings, mealType | mealType: Breakfast/Lunch/Dinner/Snack |
+| `food_logs` | id, logDate, foodId, servings, mealType, **isEaten** | mealType: B/L/D/S. isEaten for planning (v3) |
 | `supplements` | id, name, type, dosageUnit | |
 | `supplement_logs` | id, logDate, supplementId, dosage | |
-| `alcohol_logs` | id, logDate, drinkType, units, calories | |
+| `alcohol_logs` | id, logDate, drinkType, units, calories, **protein**, **carbs**, **fat**, **isEaten** | v4 added macros, v5 added isEaten |
 
 ### Finance Tables
 | Table | Key Columns | Notes |
@@ -112,7 +112,16 @@ forge/
 
 ---
 
-## Recent Features (2026-01-22)
+## Recent Features (2026-01-24)
+
+### Retrospective Logging (NEW)
+- **Support**: Food, Supplements, and Alcohol logging now respect the selected date in the Nutrition screen.
+- **Implementation**: `ManualFoodLogScreen`, `SupplementLogSheet`, and `AlcoholLogSheet` accept an `initialDate`.
+
+### Finance Management (NEW)
+- **Editing**: Users can tap any expense to open `EditExpenseDialog`.
+- **Deletion**: Clear delete button in edit dialog with confirmation.
+- **Consistency**: Retained swipe-to-delete for quick actions.
 
 ### Food Planner Mode (NEW)
 - **Toggle**: Button in Nutrition header switches between logging and planning modes
@@ -133,6 +142,14 @@ forge/
   - **Native**: `Share.shareXFiles` (AirDrop, Save to Files, etc.)
   - **Web**: Browser file download (`html.AnchorElement`).
   - **Input**: `FilePicker` works on both platforms.
+
+### Alcohol Tracking Enhancements
+- **Macro Tracking**: Alcohol now tracks Protein, Carbs, and Fat based on drink type (Beer, Wine, etc.).
+- **Editing**: Users can edit existing alcohol logs (change type, volume, units).
+- **Planning Mode**: Alcohol logs support `isEaten` status. Unchecked items do not contribute to "Actual" totals.
+- **Database**:
+  - Schema v4: Added `protein`, `carbs`, `fat` to `alcohol_logs`.
+  - Schema v5: Added `isEaten` to `alcohol_logs`.
 
 ### Home Dashboard 2.0
 - **7-Day Averages**: Automatically tracks and displays weekly average:

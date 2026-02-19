@@ -2,6 +2,29 @@
 
 All notable changes to Forge will be documented in this file.
 
+## [0.3.4] - 2026-02-06
+
+### Added
+- **Nutrition Enhancements**
+  - Enabled food name editing directly within the `EditFoodLogDialog`.
+  - Updated persistence logic to reflect name changes in the central food database.
+
+## [0.3.3] - 2026-01-28
+
+### Changed
+- **Documentation Cleanup**
+  - Removed emojis from documentation per brand guidelines.
+
+## [0.3.2] - 2026-01-24
+
+### Added
+- **Retrospective Logging**
+  - Food, Supplements, and Alcohol logging now respect the selected date in the Nutrition screen.
+- **Finance Management**
+  - Added `EditExpenseDialog` to allow editing of amount, category, description, and date for existing expenses.
+  - Delete button in edit dialog with confirmation step.
+  - Tapping an expense in the list now opens the edit dialog.
+
 ## [0.3.1] - 2026-01-22
 
 ### Added

@@ -20,6 +20,7 @@ class EditFoodLogDialog extends ConsumerStatefulWidget {
 }
 
 class _EditFoodLogDialogState extends ConsumerState<EditFoodLogDialog> {
+  late TextEditingController _nameController;
   late TextEditingController _servingsController;
   late TextEditingController _caloriesController;
   late TextEditingController _proteinController;
@@ -43,6 +44,7 @@ class _EditFoodLogDialogState extends ConsumerState<EditFoodLogDialog> {
   @override
   void initState() {
     super.initState();
+    _nameController = TextEditingController(text: widget.food.name);
     _servingsController = TextEditingController(text: widget.log.servings.toString());
     _caloriesController = TextEditingController(text: widget.food.calories.toString());
     _proteinController = TextEditingController(text: widget.food.protein.toString());
@@ -53,6 +55,7 @@ class _EditFoodLogDialogState extends ConsumerState<EditFoodLogDialog> {
 
   @override
   void dispose() {
+    _nameController.dispose();
     _servingsController.dispose();
     _caloriesController.dispose();
     _proteinController.dispose();
@@ -74,14 +77,16 @@ class _EditFoodLogDialogState extends ConsumerState<EditFoodLogDialog> {
     );
     await db.update(db.foodLogs).replace(updatedLog);
     
-    // If macros were edited, update the food record too
-    if (_isEditingMacros) {
+    // If name or macros were edited, update the food record too
+    final nameChanged = _nameController.text != widget.food.name;
+    if (_isEditingMacros || nameChanged) {
       await (db.update(db.foods)..where((f) => f.id.equals(widget.food.id))).write(
         FoodsCompanion(
-          calories: Value(_baseCalories),
-          protein: Value(_baseProtein),
-          carbs: Value(_baseCarbs),
-          fat: Value(_baseFat),
+          name: nameChanged ? Value(_nameController.text) : const Value.absent(),
+          calories: _isEditingMacros ? Value(_baseCalories) : const Value.absent(),
+          protein: _isEditingMacros ? Value(_baseProtein) : const Value.absent(),
+          carbs: _isEditingMacros ? Value(_baseCarbs) : const Value.absent(),
+          fat: _isEditingMacros ? Value(_baseFat) : const Value.absent(),
         ),
       );
     }
@@ -151,13 +156,18 @@ class _EditFoodLogDialogState extends ConsumerState<EditFoodLogDialog> {
               const SizedBox(height: 16),
               
               // Food Name
-              Text(
-                widget.food.name,
+              TextField(
+                controller: _nameController,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: AppTheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+                decoration: const InputDecoration(
+                  labelText: 'Food Name',
+                  hintText: 'Enter food name',
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               
               // Servings and Meal Type
               Row(
@@ -176,7 +186,7 @@ class _EditFoodLogDialogState extends ConsumerState<EditFoodLogDialog> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: _selectedMealType,
+                      initialValue: _selectedMealType,
                       dropdownColor: AppTheme.surface,
                       decoration: const InputDecoration(labelText: 'Meal'),
                       items: ['Breakfast', 'Lunch', 'Dinner', 'Snack']
@@ -201,7 +211,7 @@ class _EditFoodLogDialogState extends ConsumerState<EditFoodLogDialog> {
                   Switch(
                     value: _isEditingMacros,
                     onChanged: (v) => setState(() => _isEditingMacros = v),
-                    activeColor: AppTheme.nutritionColor,
+                    activeThumbColor: AppTheme.nutritionColor,
                   ),
                 ],
               ),

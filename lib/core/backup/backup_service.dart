@@ -25,16 +25,26 @@ class BackupService {
     // Export each table
     backup['tables']['exercises'] = await _exportTable(db.exercises);
     backup['tables']['exerciseLogs'] = await _exportTable(db.exerciseLogs);
-    
+
     backup['tables']['foods'] = await _exportTable(db.foods);
     backup['tables']['foodLogs'] = await _exportTable(db.foodLogs);
     backup['tables']['supplements'] = await _exportTable(db.supplements);
     backup['tables']['supplementLogs'] = await _exportTable(db.supplementLogs);
     backup['tables']['alcoholLogs'] = await _exportTable(db.alcoholLogs);
-    
+    backup['tables']['caloriePlans'] = await _exportTable(db.caloriePlans);
+    backup['tables']['caloriePlanWeeks'] = await _exportTable(
+      db.caloriePlanWeeks,
+    );
+    backup['tables']['dailyEnergyLogs'] = await _exportTable(
+      db.dailyEnergyLogs,
+    );
+    backup['tables']['bmrProfiles'] = await _exportTable(db.bmrProfiles);
+
     backup['tables']['weightLogs'] = await _exportTable(db.weightLogs);
     backup['tables']['bodyFatLogs'] = await _exportTable(db.bodyFatLogs);
-    backup['tables']['expenseCategories'] = await _exportTable(db.expenseCategories);
+    backup['tables']['expenseCategories'] = await _exportTable(
+      db.expenseCategories,
+    );
     backup['tables']['expenses'] = await _exportTable(db.expenses);
 
     // Convert to JSON
@@ -52,10 +62,9 @@ class BackupService {
       final file = io.File('${tempDir.path}/$fileName');
       await file.writeAsBytes(bytes);
 
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: 'Forge Data Backup ($dateStr)',
-      );
+      await Share.shareXFiles([
+        XFile(file.path),
+      ], text: 'Forge Data Backup ($dateStr)');
     }
   }
 
@@ -103,7 +112,9 @@ class BackupService {
     await db.transaction(() async {
       if (tables.containsKey('exercises') && tables['exercises'] != null) {
         for (var json in tables['exercises']) {
-          await db.into(db.exercises).insertOnConflictUpdate(Exercise.fromJson(json));
+          await db
+              .into(db.exercises)
+              .insertOnConflictUpdate(Exercise.fromJson(json));
         }
       }
       if (tables.containsKey('foods') && tables['foods'] != null) {
@@ -113,49 +124,101 @@ class BackupService {
       }
       if (tables.containsKey('supplements') && tables['supplements'] != null) {
         for (var json in tables['supplements']) {
-          await db.into(db.supplements).insertOnConflictUpdate(Supplement.fromJson(json));
+          await db
+              .into(db.supplements)
+              .insertOnConflictUpdate(Supplement.fromJson(json));
         }
       }
-      
+      if (tables.containsKey('caloriePlans') &&
+          tables['caloriePlans'] != null) {
+        for (var json in tables['caloriePlans']) {
+          await db
+              .into(db.caloriePlans)
+              .insertOnConflictUpdate(CaloriePlan.fromJson(json));
+        }
+      }
+      if (tables.containsKey('caloriePlanWeeks') &&
+          tables['caloriePlanWeeks'] != null) {
+        for (var json in tables['caloriePlanWeeks']) {
+          await db
+              .into(db.caloriePlanWeeks)
+              .insertOnConflictUpdate(CaloriePlanWeek.fromJson(json));
+        }
+      }
+      if (tables.containsKey('dailyEnergyLogs') &&
+          tables['dailyEnergyLogs'] != null) {
+        for (var json in tables['dailyEnergyLogs']) {
+          await db
+              .into(db.dailyEnergyLogs)
+              .insertOnConflictUpdate(DailyEnergyLog.fromJson(json));
+        }
+      }
+      if (tables.containsKey('bmrProfiles') && tables['bmrProfiles'] != null) {
+        for (var json in tables['bmrProfiles']) {
+          await db
+              .into(db.bmrProfiles)
+              .insertOnConflictUpdate(BmrProfile.fromJson(json));
+        }
+      }
+
       // Logs
-      if (tables.containsKey('exerciseLogs') && tables['exerciseLogs'] != null) {
+      if (tables.containsKey('exerciseLogs') &&
+          tables['exerciseLogs'] != null) {
         for (var json in tables['exerciseLogs']) {
-          await db.into(db.exerciseLogs).insertOnConflictUpdate(ExerciseLog.fromJson(json));
+          await db
+              .into(db.exerciseLogs)
+              .insertOnConflictUpdate(ExerciseLog.fromJson(json));
         }
       }
       if (tables.containsKey('foodLogs') && tables['foodLogs'] != null) {
         for (var json in tables['foodLogs']) {
-          await db.into(db.foodLogs).insertOnConflictUpdate(FoodLog.fromJson(json));
+          await db
+              .into(db.foodLogs)
+              .insertOnConflictUpdate(FoodLog.fromJson(json));
         }
       }
-      if (tables.containsKey('supplementLogs') && tables['supplementLogs'] != null) {
+      if (tables.containsKey('supplementLogs') &&
+          tables['supplementLogs'] != null) {
         for (var json in tables['supplementLogs']) {
-          await db.into(db.supplementLogs).insertOnConflictUpdate(SupplementLog.fromJson(json));
+          await db
+              .into(db.supplementLogs)
+              .insertOnConflictUpdate(SupplementLog.fromJson(json));
         }
       }
       if (tables.containsKey('alcoholLogs') && tables['alcoholLogs'] != null) {
         for (var json in tables['alcoholLogs']) {
-          await db.into(db.alcoholLogs).insertOnConflictUpdate(AlcoholLog.fromJson(json));
+          await db
+              .into(db.alcoholLogs)
+              .insertOnConflictUpdate(AlcoholLog.fromJson(json));
         }
       }
       if (tables.containsKey('weightLogs') && tables['weightLogs'] != null) {
         for (var json in tables['weightLogs']) {
-          await db.into(db.weightLogs).insertOnConflictUpdate(WeightLog.fromJson(json));
+          await db
+              .into(db.weightLogs)
+              .insertOnConflictUpdate(WeightLog.fromJson(json));
         }
       }
       if (tables.containsKey('bodyFatLogs') && tables['bodyFatLogs'] != null) {
         for (var json in tables['bodyFatLogs']) {
-          await db.into(db.bodyFatLogs).insertOnConflictUpdate(BodyFatLog.fromJson(json));
+          await db
+              .into(db.bodyFatLogs)
+              .insertOnConflictUpdate(BodyFatLog.fromJson(json));
         }
       }
-      if (tables.containsKey('expenseCategories') && tables['expenseCategories'] != null) {
+      if (tables.containsKey('expenseCategories') &&
+          tables['expenseCategories'] != null) {
         for (var json in tables['expenseCategories']) {
-          await db.into(db.expenseCategories).insertOnConflictUpdate(ExpenseCategory.fromJson(json));
+          await db
+              .into(db.expenseCategories)
+              .insertOnConflictUpdate(ExpenseCategory.fromJson(json));
         }
       }
       if (tables.containsKey('expenses') && tables['expenses'] != null) {
         for (var json in tables['expenses']) {
-          await db.into(db.expenses).insertOnConflictUpdate(Expense.fromJson(json));
+          await db
+              .into(db.expenses)
+              .insertOnConflictUpdate(Expense.fromJson(json));
         }
       }
     });
@@ -165,7 +228,10 @@ class BackupService {
 
   Future<List<Map<String, dynamic>>> _exportTable(TableInfo table) async {
     final rows = await db.select(table).get();
-    return rows.map((row) => (row as dynamic).toJson()).cast<Map<String, dynamic>>().toList();
+    return rows
+        .map((row) => (row as dynamic).toJson())
+        .cast<Map<String, dynamic>>()
+        .toList();
   }
 
   /// Helper to trigger a download in the browser
@@ -173,4 +239,3 @@ class BackupService {
     BackupHelper.downloadFile(Uint8List.fromList(bytes), fileName);
   }
 }
-

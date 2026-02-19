@@ -3405,6 +3405,1759 @@ class AlcoholLogsCompanion extends UpdateCompanion<AlcoholLog> {
   }
 }
 
+class $CaloriePlansTable extends CaloriePlans
+    with TableInfo<$CaloriePlansTable, CaloriePlan> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CaloriePlansTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 120,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _goalTypeMeta = const VerificationMeta(
+    'goalType',
+  );
+  @override
+  late final GeneratedColumn<String> goalType = GeneratedColumn<String>(
+    'goal_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('maintain'),
+  );
+  static const VerificationMeta _startDateMeta = const VerificationMeta(
+    'startDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startDate = GeneratedColumn<DateTime>(
+    'start_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endDateMeta = const VerificationMeta(
+    'endDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> endDate = GeneratedColumn<DateTime>(
+    'end_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetDailyCaloriesMeta =
+      const VerificationMeta('targetDailyCalories');
+  @override
+  late final GeneratedColumn<int> targetDailyCalories = GeneratedColumn<int>(
+    'target_daily_calories',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _targetWeeklyDeficitMeta =
+      const VerificationMeta('targetWeeklyDeficit');
+  @override
+  late final GeneratedColumn<int> targetWeeklyDeficit = GeneratedColumn<int>(
+    'target_weekly_deficit',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    goalType,
+    startDate,
+    endDate,
+    targetDailyCalories,
+    targetWeeklyDeficit,
+    isActive,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'calorie_plans';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CaloriePlan> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('goal_type')) {
+      context.handle(
+        _goalTypeMeta,
+        goalType.isAcceptableOrUnknown(data['goal_type']!, _goalTypeMeta),
+      );
+    }
+    if (data.containsKey('start_date')) {
+      context.handle(
+        _startDateMeta,
+        startDate.isAcceptableOrUnknown(data['start_date']!, _startDateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startDateMeta);
+    }
+    if (data.containsKey('end_date')) {
+      context.handle(
+        _endDateMeta,
+        endDate.isAcceptableOrUnknown(data['end_date']!, _endDateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_endDateMeta);
+    }
+    if (data.containsKey('target_daily_calories')) {
+      context.handle(
+        _targetDailyCaloriesMeta,
+        targetDailyCalories.isAcceptableOrUnknown(
+          data['target_daily_calories']!,
+          _targetDailyCaloriesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('target_weekly_deficit')) {
+      context.handle(
+        _targetWeeklyDeficitMeta,
+        targetWeeklyDeficit.isAcceptableOrUnknown(
+          data['target_weekly_deficit']!,
+          _targetWeeklyDeficitMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CaloriePlan map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CaloriePlan(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      goalType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}goal_type'],
+      )!,
+      startDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}start_date'],
+      )!,
+      endDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}end_date'],
+      )!,
+      targetDailyCalories: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}target_daily_calories'],
+      ),
+      targetWeeklyDeficit: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}target_weekly_deficit'],
+      ),
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CaloriePlansTable createAlias(String alias) {
+    return $CaloriePlansTable(attachedDatabase, alias);
+  }
+}
+
+class CaloriePlan extends DataClass implements Insertable<CaloriePlan> {
+  final int id;
+  final String name;
+  final String goalType;
+  final DateTime startDate;
+  final DateTime endDate;
+  final int? targetDailyCalories;
+  final int? targetWeeklyDeficit;
+  final bool isActive;
+  final DateTime createdAt;
+  const CaloriePlan({
+    required this.id,
+    required this.name,
+    required this.goalType,
+    required this.startDate,
+    required this.endDate,
+    this.targetDailyCalories,
+    this.targetWeeklyDeficit,
+    required this.isActive,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['goal_type'] = Variable<String>(goalType);
+    map['start_date'] = Variable<DateTime>(startDate);
+    map['end_date'] = Variable<DateTime>(endDate);
+    if (!nullToAbsent || targetDailyCalories != null) {
+      map['target_daily_calories'] = Variable<int>(targetDailyCalories);
+    }
+    if (!nullToAbsent || targetWeeklyDeficit != null) {
+      map['target_weekly_deficit'] = Variable<int>(targetWeeklyDeficit);
+    }
+    map['is_active'] = Variable<bool>(isActive);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  CaloriePlansCompanion toCompanion(bool nullToAbsent) {
+    return CaloriePlansCompanion(
+      id: Value(id),
+      name: Value(name),
+      goalType: Value(goalType),
+      startDate: Value(startDate),
+      endDate: Value(endDate),
+      targetDailyCalories: targetDailyCalories == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetDailyCalories),
+      targetWeeklyDeficit: targetWeeklyDeficit == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetWeeklyDeficit),
+      isActive: Value(isActive),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory CaloriePlan.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CaloriePlan(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      goalType: serializer.fromJson<String>(json['goalType']),
+      startDate: serializer.fromJson<DateTime>(json['startDate']),
+      endDate: serializer.fromJson<DateTime>(json['endDate']),
+      targetDailyCalories: serializer.fromJson<int?>(
+        json['targetDailyCalories'],
+      ),
+      targetWeeklyDeficit: serializer.fromJson<int?>(
+        json['targetWeeklyDeficit'],
+      ),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'goalType': serializer.toJson<String>(goalType),
+      'startDate': serializer.toJson<DateTime>(startDate),
+      'endDate': serializer.toJson<DateTime>(endDate),
+      'targetDailyCalories': serializer.toJson<int?>(targetDailyCalories),
+      'targetWeeklyDeficit': serializer.toJson<int?>(targetWeeklyDeficit),
+      'isActive': serializer.toJson<bool>(isActive),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  CaloriePlan copyWith({
+    int? id,
+    String? name,
+    String? goalType,
+    DateTime? startDate,
+    DateTime? endDate,
+    Value<int?> targetDailyCalories = const Value.absent(),
+    Value<int?> targetWeeklyDeficit = const Value.absent(),
+    bool? isActive,
+    DateTime? createdAt,
+  }) => CaloriePlan(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    goalType: goalType ?? this.goalType,
+    startDate: startDate ?? this.startDate,
+    endDate: endDate ?? this.endDate,
+    targetDailyCalories: targetDailyCalories.present
+        ? targetDailyCalories.value
+        : this.targetDailyCalories,
+    targetWeeklyDeficit: targetWeeklyDeficit.present
+        ? targetWeeklyDeficit.value
+        : this.targetWeeklyDeficit,
+    isActive: isActive ?? this.isActive,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  CaloriePlan copyWithCompanion(CaloriePlansCompanion data) {
+    return CaloriePlan(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      goalType: data.goalType.present ? data.goalType.value : this.goalType,
+      startDate: data.startDate.present ? data.startDate.value : this.startDate,
+      endDate: data.endDate.present ? data.endDate.value : this.endDate,
+      targetDailyCalories: data.targetDailyCalories.present
+          ? data.targetDailyCalories.value
+          : this.targetDailyCalories,
+      targetWeeklyDeficit: data.targetWeeklyDeficit.present
+          ? data.targetWeeklyDeficit.value
+          : this.targetWeeklyDeficit,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CaloriePlan(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('goalType: $goalType, ')
+          ..write('startDate: $startDate, ')
+          ..write('endDate: $endDate, ')
+          ..write('targetDailyCalories: $targetDailyCalories, ')
+          ..write('targetWeeklyDeficit: $targetWeeklyDeficit, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    goalType,
+    startDate,
+    endDate,
+    targetDailyCalories,
+    targetWeeklyDeficit,
+    isActive,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CaloriePlan &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.goalType == this.goalType &&
+          other.startDate == this.startDate &&
+          other.endDate == this.endDate &&
+          other.targetDailyCalories == this.targetDailyCalories &&
+          other.targetWeeklyDeficit == this.targetWeeklyDeficit &&
+          other.isActive == this.isActive &&
+          other.createdAt == this.createdAt);
+}
+
+class CaloriePlansCompanion extends UpdateCompanion<CaloriePlan> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> goalType;
+  final Value<DateTime> startDate;
+  final Value<DateTime> endDate;
+  final Value<int?> targetDailyCalories;
+  final Value<int?> targetWeeklyDeficit;
+  final Value<bool> isActive;
+  final Value<DateTime> createdAt;
+  const CaloriePlansCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.goalType = const Value.absent(),
+    this.startDate = const Value.absent(),
+    this.endDate = const Value.absent(),
+    this.targetDailyCalories = const Value.absent(),
+    this.targetWeeklyDeficit = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  CaloriePlansCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.goalType = const Value.absent(),
+    required DateTime startDate,
+    required DateTime endDate,
+    this.targetDailyCalories = const Value.absent(),
+    this.targetWeeklyDeficit = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  }) : name = Value(name),
+       startDate = Value(startDate),
+       endDate = Value(endDate);
+  static Insertable<CaloriePlan> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? goalType,
+    Expression<DateTime>? startDate,
+    Expression<DateTime>? endDate,
+    Expression<int>? targetDailyCalories,
+    Expression<int>? targetWeeklyDeficit,
+    Expression<bool>? isActive,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (goalType != null) 'goal_type': goalType,
+      if (startDate != null) 'start_date': startDate,
+      if (endDate != null) 'end_date': endDate,
+      if (targetDailyCalories != null)
+        'target_daily_calories': targetDailyCalories,
+      if (targetWeeklyDeficit != null)
+        'target_weekly_deficit': targetWeeklyDeficit,
+      if (isActive != null) 'is_active': isActive,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  CaloriePlansCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? goalType,
+    Value<DateTime>? startDate,
+    Value<DateTime>? endDate,
+    Value<int?>? targetDailyCalories,
+    Value<int?>? targetWeeklyDeficit,
+    Value<bool>? isActive,
+    Value<DateTime>? createdAt,
+  }) {
+    return CaloriePlansCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      goalType: goalType ?? this.goalType,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      targetDailyCalories: targetDailyCalories ?? this.targetDailyCalories,
+      targetWeeklyDeficit: targetWeeklyDeficit ?? this.targetWeeklyDeficit,
+      isActive: isActive ?? this.isActive,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (goalType.present) {
+      map['goal_type'] = Variable<String>(goalType.value);
+    }
+    if (startDate.present) {
+      map['start_date'] = Variable<DateTime>(startDate.value);
+    }
+    if (endDate.present) {
+      map['end_date'] = Variable<DateTime>(endDate.value);
+    }
+    if (targetDailyCalories.present) {
+      map['target_daily_calories'] = Variable<int>(targetDailyCalories.value);
+    }
+    if (targetWeeklyDeficit.present) {
+      map['target_weekly_deficit'] = Variable<int>(targetWeeklyDeficit.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CaloriePlansCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('goalType: $goalType, ')
+          ..write('startDate: $startDate, ')
+          ..write('endDate: $endDate, ')
+          ..write('targetDailyCalories: $targetDailyCalories, ')
+          ..write('targetWeeklyDeficit: $targetWeeklyDeficit, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CaloriePlanWeeksTable extends CaloriePlanWeeks
+    with TableInfo<$CaloriePlanWeeksTable, CaloriePlanWeek> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CaloriePlanWeeksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _planIdMeta = const VerificationMeta('planId');
+  @override
+  late final GeneratedColumn<int> planId = GeneratedColumn<int>(
+    'plan_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES calorie_plans (id)',
+    ),
+  );
+  static const VerificationMeta _weekNumberMeta = const VerificationMeta(
+    'weekNumber',
+  );
+  @override
+  late final GeneratedColumn<int> weekNumber = GeneratedColumn<int>(
+    'week_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _weekStartDateMeta = const VerificationMeta(
+    'weekStartDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> weekStartDate =
+      GeneratedColumn<DateTime>(
+        'week_start_date',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _weekEndDateMeta = const VerificationMeta(
+    'weekEndDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> weekEndDate = GeneratedColumn<DateTime>(
+    'week_end_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetDailyCaloriesMeta =
+      const VerificationMeta('targetDailyCalories');
+  @override
+  late final GeneratedColumn<int> targetDailyCalories = GeneratedColumn<int>(
+    'target_daily_calories',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _targetWeeklyDeficitMeta =
+      const VerificationMeta('targetWeeklyDeficit');
+  @override
+  late final GeneratedColumn<int> targetWeeklyDeficit = GeneratedColumn<int>(
+    'target_weekly_deficit',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    planId,
+    weekNumber,
+    weekStartDate,
+    weekEndDate,
+    targetDailyCalories,
+    targetWeeklyDeficit,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'calorie_plan_weeks';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CaloriePlanWeek> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('plan_id')) {
+      context.handle(
+        _planIdMeta,
+        planId.isAcceptableOrUnknown(data['plan_id']!, _planIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_planIdMeta);
+    }
+    if (data.containsKey('week_number')) {
+      context.handle(
+        _weekNumberMeta,
+        weekNumber.isAcceptableOrUnknown(data['week_number']!, _weekNumberMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_weekNumberMeta);
+    }
+    if (data.containsKey('week_start_date')) {
+      context.handle(
+        _weekStartDateMeta,
+        weekStartDate.isAcceptableOrUnknown(
+          data['week_start_date']!,
+          _weekStartDateMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_weekStartDateMeta);
+    }
+    if (data.containsKey('week_end_date')) {
+      context.handle(
+        _weekEndDateMeta,
+        weekEndDate.isAcceptableOrUnknown(
+          data['week_end_date']!,
+          _weekEndDateMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_weekEndDateMeta);
+    }
+    if (data.containsKey('target_daily_calories')) {
+      context.handle(
+        _targetDailyCaloriesMeta,
+        targetDailyCalories.isAcceptableOrUnknown(
+          data['target_daily_calories']!,
+          _targetDailyCaloriesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('target_weekly_deficit')) {
+      context.handle(
+        _targetWeeklyDeficitMeta,
+        targetWeeklyDeficit.isAcceptableOrUnknown(
+          data['target_weekly_deficit']!,
+          _targetWeeklyDeficitMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {planId, weekNumber},
+  ];
+  @override
+  CaloriePlanWeek map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CaloriePlanWeek(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      planId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}plan_id'],
+      )!,
+      weekNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}week_number'],
+      )!,
+      weekStartDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}week_start_date'],
+      )!,
+      weekEndDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}week_end_date'],
+      )!,
+      targetDailyCalories: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}target_daily_calories'],
+      ),
+      targetWeeklyDeficit: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}target_weekly_deficit'],
+      ),
+    );
+  }
+
+  @override
+  $CaloriePlanWeeksTable createAlias(String alias) {
+    return $CaloriePlanWeeksTable(attachedDatabase, alias);
+  }
+}
+
+class CaloriePlanWeek extends DataClass implements Insertable<CaloriePlanWeek> {
+  final int id;
+  final int planId;
+  final int weekNumber;
+  final DateTime weekStartDate;
+  final DateTime weekEndDate;
+  final int? targetDailyCalories;
+  final int? targetWeeklyDeficit;
+  const CaloriePlanWeek({
+    required this.id,
+    required this.planId,
+    required this.weekNumber,
+    required this.weekStartDate,
+    required this.weekEndDate,
+    this.targetDailyCalories,
+    this.targetWeeklyDeficit,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['plan_id'] = Variable<int>(planId);
+    map['week_number'] = Variable<int>(weekNumber);
+    map['week_start_date'] = Variable<DateTime>(weekStartDate);
+    map['week_end_date'] = Variable<DateTime>(weekEndDate);
+    if (!nullToAbsent || targetDailyCalories != null) {
+      map['target_daily_calories'] = Variable<int>(targetDailyCalories);
+    }
+    if (!nullToAbsent || targetWeeklyDeficit != null) {
+      map['target_weekly_deficit'] = Variable<int>(targetWeeklyDeficit);
+    }
+    return map;
+  }
+
+  CaloriePlanWeeksCompanion toCompanion(bool nullToAbsent) {
+    return CaloriePlanWeeksCompanion(
+      id: Value(id),
+      planId: Value(planId),
+      weekNumber: Value(weekNumber),
+      weekStartDate: Value(weekStartDate),
+      weekEndDate: Value(weekEndDate),
+      targetDailyCalories: targetDailyCalories == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetDailyCalories),
+      targetWeeklyDeficit: targetWeeklyDeficit == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetWeeklyDeficit),
+    );
+  }
+
+  factory CaloriePlanWeek.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CaloriePlanWeek(
+      id: serializer.fromJson<int>(json['id']),
+      planId: serializer.fromJson<int>(json['planId']),
+      weekNumber: serializer.fromJson<int>(json['weekNumber']),
+      weekStartDate: serializer.fromJson<DateTime>(json['weekStartDate']),
+      weekEndDate: serializer.fromJson<DateTime>(json['weekEndDate']),
+      targetDailyCalories: serializer.fromJson<int?>(
+        json['targetDailyCalories'],
+      ),
+      targetWeeklyDeficit: serializer.fromJson<int?>(
+        json['targetWeeklyDeficit'],
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'planId': serializer.toJson<int>(planId),
+      'weekNumber': serializer.toJson<int>(weekNumber),
+      'weekStartDate': serializer.toJson<DateTime>(weekStartDate),
+      'weekEndDate': serializer.toJson<DateTime>(weekEndDate),
+      'targetDailyCalories': serializer.toJson<int?>(targetDailyCalories),
+      'targetWeeklyDeficit': serializer.toJson<int?>(targetWeeklyDeficit),
+    };
+  }
+
+  CaloriePlanWeek copyWith({
+    int? id,
+    int? planId,
+    int? weekNumber,
+    DateTime? weekStartDate,
+    DateTime? weekEndDate,
+    Value<int?> targetDailyCalories = const Value.absent(),
+    Value<int?> targetWeeklyDeficit = const Value.absent(),
+  }) => CaloriePlanWeek(
+    id: id ?? this.id,
+    planId: planId ?? this.planId,
+    weekNumber: weekNumber ?? this.weekNumber,
+    weekStartDate: weekStartDate ?? this.weekStartDate,
+    weekEndDate: weekEndDate ?? this.weekEndDate,
+    targetDailyCalories: targetDailyCalories.present
+        ? targetDailyCalories.value
+        : this.targetDailyCalories,
+    targetWeeklyDeficit: targetWeeklyDeficit.present
+        ? targetWeeklyDeficit.value
+        : this.targetWeeklyDeficit,
+  );
+  CaloriePlanWeek copyWithCompanion(CaloriePlanWeeksCompanion data) {
+    return CaloriePlanWeek(
+      id: data.id.present ? data.id.value : this.id,
+      planId: data.planId.present ? data.planId.value : this.planId,
+      weekNumber: data.weekNumber.present
+          ? data.weekNumber.value
+          : this.weekNumber,
+      weekStartDate: data.weekStartDate.present
+          ? data.weekStartDate.value
+          : this.weekStartDate,
+      weekEndDate: data.weekEndDate.present
+          ? data.weekEndDate.value
+          : this.weekEndDate,
+      targetDailyCalories: data.targetDailyCalories.present
+          ? data.targetDailyCalories.value
+          : this.targetDailyCalories,
+      targetWeeklyDeficit: data.targetWeeklyDeficit.present
+          ? data.targetWeeklyDeficit.value
+          : this.targetWeeklyDeficit,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CaloriePlanWeek(')
+          ..write('id: $id, ')
+          ..write('planId: $planId, ')
+          ..write('weekNumber: $weekNumber, ')
+          ..write('weekStartDate: $weekStartDate, ')
+          ..write('weekEndDate: $weekEndDate, ')
+          ..write('targetDailyCalories: $targetDailyCalories, ')
+          ..write('targetWeeklyDeficit: $targetWeeklyDeficit')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    planId,
+    weekNumber,
+    weekStartDate,
+    weekEndDate,
+    targetDailyCalories,
+    targetWeeklyDeficit,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CaloriePlanWeek &&
+          other.id == this.id &&
+          other.planId == this.planId &&
+          other.weekNumber == this.weekNumber &&
+          other.weekStartDate == this.weekStartDate &&
+          other.weekEndDate == this.weekEndDate &&
+          other.targetDailyCalories == this.targetDailyCalories &&
+          other.targetWeeklyDeficit == this.targetWeeklyDeficit);
+}
+
+class CaloriePlanWeeksCompanion extends UpdateCompanion<CaloriePlanWeek> {
+  final Value<int> id;
+  final Value<int> planId;
+  final Value<int> weekNumber;
+  final Value<DateTime> weekStartDate;
+  final Value<DateTime> weekEndDate;
+  final Value<int?> targetDailyCalories;
+  final Value<int?> targetWeeklyDeficit;
+  const CaloriePlanWeeksCompanion({
+    this.id = const Value.absent(),
+    this.planId = const Value.absent(),
+    this.weekNumber = const Value.absent(),
+    this.weekStartDate = const Value.absent(),
+    this.weekEndDate = const Value.absent(),
+    this.targetDailyCalories = const Value.absent(),
+    this.targetWeeklyDeficit = const Value.absent(),
+  });
+  CaloriePlanWeeksCompanion.insert({
+    this.id = const Value.absent(),
+    required int planId,
+    required int weekNumber,
+    required DateTime weekStartDate,
+    required DateTime weekEndDate,
+    this.targetDailyCalories = const Value.absent(),
+    this.targetWeeklyDeficit = const Value.absent(),
+  }) : planId = Value(planId),
+       weekNumber = Value(weekNumber),
+       weekStartDate = Value(weekStartDate),
+       weekEndDate = Value(weekEndDate);
+  static Insertable<CaloriePlanWeek> custom({
+    Expression<int>? id,
+    Expression<int>? planId,
+    Expression<int>? weekNumber,
+    Expression<DateTime>? weekStartDate,
+    Expression<DateTime>? weekEndDate,
+    Expression<int>? targetDailyCalories,
+    Expression<int>? targetWeeklyDeficit,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (planId != null) 'plan_id': planId,
+      if (weekNumber != null) 'week_number': weekNumber,
+      if (weekStartDate != null) 'week_start_date': weekStartDate,
+      if (weekEndDate != null) 'week_end_date': weekEndDate,
+      if (targetDailyCalories != null)
+        'target_daily_calories': targetDailyCalories,
+      if (targetWeeklyDeficit != null)
+        'target_weekly_deficit': targetWeeklyDeficit,
+    });
+  }
+
+  CaloriePlanWeeksCompanion copyWith({
+    Value<int>? id,
+    Value<int>? planId,
+    Value<int>? weekNumber,
+    Value<DateTime>? weekStartDate,
+    Value<DateTime>? weekEndDate,
+    Value<int?>? targetDailyCalories,
+    Value<int?>? targetWeeklyDeficit,
+  }) {
+    return CaloriePlanWeeksCompanion(
+      id: id ?? this.id,
+      planId: planId ?? this.planId,
+      weekNumber: weekNumber ?? this.weekNumber,
+      weekStartDate: weekStartDate ?? this.weekStartDate,
+      weekEndDate: weekEndDate ?? this.weekEndDate,
+      targetDailyCalories: targetDailyCalories ?? this.targetDailyCalories,
+      targetWeeklyDeficit: targetWeeklyDeficit ?? this.targetWeeklyDeficit,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (planId.present) {
+      map['plan_id'] = Variable<int>(planId.value);
+    }
+    if (weekNumber.present) {
+      map['week_number'] = Variable<int>(weekNumber.value);
+    }
+    if (weekStartDate.present) {
+      map['week_start_date'] = Variable<DateTime>(weekStartDate.value);
+    }
+    if (weekEndDate.present) {
+      map['week_end_date'] = Variable<DateTime>(weekEndDate.value);
+    }
+    if (targetDailyCalories.present) {
+      map['target_daily_calories'] = Variable<int>(targetDailyCalories.value);
+    }
+    if (targetWeeklyDeficit.present) {
+      map['target_weekly_deficit'] = Variable<int>(targetWeeklyDeficit.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CaloriePlanWeeksCompanion(')
+          ..write('id: $id, ')
+          ..write('planId: $planId, ')
+          ..write('weekNumber: $weekNumber, ')
+          ..write('weekStartDate: $weekStartDate, ')
+          ..write('weekEndDate: $weekEndDate, ')
+          ..write('targetDailyCalories: $targetDailyCalories, ')
+          ..write('targetWeeklyDeficit: $targetWeeklyDeficit')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DailyEnergyLogsTable extends DailyEnergyLogs
+    with TableInfo<$DailyEnergyLogsTable, DailyEnergyLog> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DailyEnergyLogsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _logDateMeta = const VerificationMeta(
+    'logDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> logDate = GeneratedColumn<DateTime>(
+    'log_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _stepsMeta = const VerificationMeta('steps');
+  @override
+  late final GeneratedColumn<int> steps = GeneratedColumn<int>(
+    'steps',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _caloriesOutMeta = const VerificationMeta(
+    'caloriesOut',
+  );
+  @override
+  late final GeneratedColumn<double> caloriesOut = GeneratedColumn<double>(
+    'calories_out',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('manual'),
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    logDate,
+    steps,
+    caloriesOut,
+    source,
+    notes,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'daily_energy_logs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DailyEnergyLog> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('log_date')) {
+      context.handle(
+        _logDateMeta,
+        logDate.isAcceptableOrUnknown(data['log_date']!, _logDateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_logDateMeta);
+    }
+    if (data.containsKey('steps')) {
+      context.handle(
+        _stepsMeta,
+        steps.isAcceptableOrUnknown(data['steps']!, _stepsMeta),
+      );
+    }
+    if (data.containsKey('calories_out')) {
+      context.handle(
+        _caloriesOutMeta,
+        caloriesOut.isAcceptableOrUnknown(
+          data['calories_out']!,
+          _caloriesOutMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_caloriesOutMeta);
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {logDate},
+  ];
+  @override
+  DailyEnergyLog map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DailyEnergyLog(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      logDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}log_date'],
+      )!,
+      steps: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}steps'],
+      )!,
+      caloriesOut: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}calories_out'],
+      )!,
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $DailyEnergyLogsTable createAlias(String alias) {
+    return $DailyEnergyLogsTable(attachedDatabase, alias);
+  }
+}
+
+class DailyEnergyLog extends DataClass implements Insertable<DailyEnergyLog> {
+  final int id;
+  final DateTime logDate;
+  final int steps;
+  final double caloriesOut;
+  final String source;
+  final String? notes;
+  final DateTime updatedAt;
+  const DailyEnergyLog({
+    required this.id,
+    required this.logDate,
+    required this.steps,
+    required this.caloriesOut,
+    required this.source,
+    this.notes,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['log_date'] = Variable<DateTime>(logDate);
+    map['steps'] = Variable<int>(steps);
+    map['calories_out'] = Variable<double>(caloriesOut);
+    map['source'] = Variable<String>(source);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  DailyEnergyLogsCompanion toCompanion(bool nullToAbsent) {
+    return DailyEnergyLogsCompanion(
+      id: Value(id),
+      logDate: Value(logDate),
+      steps: Value(steps),
+      caloriesOut: Value(caloriesOut),
+      source: Value(source),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory DailyEnergyLog.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DailyEnergyLog(
+      id: serializer.fromJson<int>(json['id']),
+      logDate: serializer.fromJson<DateTime>(json['logDate']),
+      steps: serializer.fromJson<int>(json['steps']),
+      caloriesOut: serializer.fromJson<double>(json['caloriesOut']),
+      source: serializer.fromJson<String>(json['source']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'logDate': serializer.toJson<DateTime>(logDate),
+      'steps': serializer.toJson<int>(steps),
+      'caloriesOut': serializer.toJson<double>(caloriesOut),
+      'source': serializer.toJson<String>(source),
+      'notes': serializer.toJson<String?>(notes),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  DailyEnergyLog copyWith({
+    int? id,
+    DateTime? logDate,
+    int? steps,
+    double? caloriesOut,
+    String? source,
+    Value<String?> notes = const Value.absent(),
+    DateTime? updatedAt,
+  }) => DailyEnergyLog(
+    id: id ?? this.id,
+    logDate: logDate ?? this.logDate,
+    steps: steps ?? this.steps,
+    caloriesOut: caloriesOut ?? this.caloriesOut,
+    source: source ?? this.source,
+    notes: notes.present ? notes.value : this.notes,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  DailyEnergyLog copyWithCompanion(DailyEnergyLogsCompanion data) {
+    return DailyEnergyLog(
+      id: data.id.present ? data.id.value : this.id,
+      logDate: data.logDate.present ? data.logDate.value : this.logDate,
+      steps: data.steps.present ? data.steps.value : this.steps,
+      caloriesOut: data.caloriesOut.present
+          ? data.caloriesOut.value
+          : this.caloriesOut,
+      source: data.source.present ? data.source.value : this.source,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DailyEnergyLog(')
+          ..write('id: $id, ')
+          ..write('logDate: $logDate, ')
+          ..write('steps: $steps, ')
+          ..write('caloriesOut: $caloriesOut, ')
+          ..write('source: $source, ')
+          ..write('notes: $notes, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, logDate, steps, caloriesOut, source, notes, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DailyEnergyLog &&
+          other.id == this.id &&
+          other.logDate == this.logDate &&
+          other.steps == this.steps &&
+          other.caloriesOut == this.caloriesOut &&
+          other.source == this.source &&
+          other.notes == this.notes &&
+          other.updatedAt == this.updatedAt);
+}
+
+class DailyEnergyLogsCompanion extends UpdateCompanion<DailyEnergyLog> {
+  final Value<int> id;
+  final Value<DateTime> logDate;
+  final Value<int> steps;
+  final Value<double> caloriesOut;
+  final Value<String> source;
+  final Value<String?> notes;
+  final Value<DateTime> updatedAt;
+  const DailyEnergyLogsCompanion({
+    this.id = const Value.absent(),
+    this.logDate = const Value.absent(),
+    this.steps = const Value.absent(),
+    this.caloriesOut = const Value.absent(),
+    this.source = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  DailyEnergyLogsCompanion.insert({
+    this.id = const Value.absent(),
+    required DateTime logDate,
+    this.steps = const Value.absent(),
+    required double caloriesOut,
+    this.source = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : logDate = Value(logDate),
+       caloriesOut = Value(caloriesOut);
+  static Insertable<DailyEnergyLog> custom({
+    Expression<int>? id,
+    Expression<DateTime>? logDate,
+    Expression<int>? steps,
+    Expression<double>? caloriesOut,
+    Expression<String>? source,
+    Expression<String>? notes,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (logDate != null) 'log_date': logDate,
+      if (steps != null) 'steps': steps,
+      if (caloriesOut != null) 'calories_out': caloriesOut,
+      if (source != null) 'source': source,
+      if (notes != null) 'notes': notes,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  DailyEnergyLogsCompanion copyWith({
+    Value<int>? id,
+    Value<DateTime>? logDate,
+    Value<int>? steps,
+    Value<double>? caloriesOut,
+    Value<String>? source,
+    Value<String?>? notes,
+    Value<DateTime>? updatedAt,
+  }) {
+    return DailyEnergyLogsCompanion(
+      id: id ?? this.id,
+      logDate: logDate ?? this.logDate,
+      steps: steps ?? this.steps,
+      caloriesOut: caloriesOut ?? this.caloriesOut,
+      source: source ?? this.source,
+      notes: notes ?? this.notes,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (logDate.present) {
+      map['log_date'] = Variable<DateTime>(logDate.value);
+    }
+    if (steps.present) {
+      map['steps'] = Variable<int>(steps.value);
+    }
+    if (caloriesOut.present) {
+      map['calories_out'] = Variable<double>(caloriesOut.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DailyEnergyLogsCompanion(')
+          ..write('id: $id, ')
+          ..write('logDate: $logDate, ')
+          ..write('steps: $steps, ')
+          ..write('caloriesOut: $caloriesOut, ')
+          ..write('source: $source, ')
+          ..write('notes: $notes, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $BmrProfilesTable extends BmrProfiles
+    with TableInfo<$BmrProfilesTable, BmrProfile> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $BmrProfilesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _bmrMeta = const VerificationMeta('bmr');
+  @override
+  late final GeneratedColumn<double> bmr = GeneratedColumn<double>(
+    'bmr',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, bmr, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'bmr_profiles';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<BmrProfile> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('bmr')) {
+      context.handle(
+        _bmrMeta,
+        bmr.isAcceptableOrUnknown(data['bmr']!, _bmrMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bmrMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  BmrProfile map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return BmrProfile(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      bmr: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}bmr'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $BmrProfilesTable createAlias(String alias) {
+    return $BmrProfilesTable(attachedDatabase, alias);
+  }
+}
+
+class BmrProfile extends DataClass implements Insertable<BmrProfile> {
+  final int id;
+  final double bmr;
+  final DateTime updatedAt;
+  const BmrProfile({
+    required this.id,
+    required this.bmr,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['bmr'] = Variable<double>(bmr);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  BmrProfilesCompanion toCompanion(bool nullToAbsent) {
+    return BmrProfilesCompanion(
+      id: Value(id),
+      bmr: Value(bmr),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory BmrProfile.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return BmrProfile(
+      id: serializer.fromJson<int>(json['id']),
+      bmr: serializer.fromJson<double>(json['bmr']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'bmr': serializer.toJson<double>(bmr),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  BmrProfile copyWith({int? id, double? bmr, DateTime? updatedAt}) =>
+      BmrProfile(
+        id: id ?? this.id,
+        bmr: bmr ?? this.bmr,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  BmrProfile copyWithCompanion(BmrProfilesCompanion data) {
+    return BmrProfile(
+      id: data.id.present ? data.id.value : this.id,
+      bmr: data.bmr.present ? data.bmr.value : this.bmr,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BmrProfile(')
+          ..write('id: $id, ')
+          ..write('bmr: $bmr, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, bmr, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is BmrProfile &&
+          other.id == this.id &&
+          other.bmr == this.bmr &&
+          other.updatedAt == this.updatedAt);
+}
+
+class BmrProfilesCompanion extends UpdateCompanion<BmrProfile> {
+  final Value<int> id;
+  final Value<double> bmr;
+  final Value<DateTime> updatedAt;
+  const BmrProfilesCompanion({
+    this.id = const Value.absent(),
+    this.bmr = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  BmrProfilesCompanion.insert({
+    this.id = const Value.absent(),
+    required double bmr,
+    this.updatedAt = const Value.absent(),
+  }) : bmr = Value(bmr);
+  static Insertable<BmrProfile> custom({
+    Expression<int>? id,
+    Expression<double>? bmr,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (bmr != null) 'bmr': bmr,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  BmrProfilesCompanion copyWith({
+    Value<int>? id,
+    Value<double>? bmr,
+    Value<DateTime>? updatedAt,
+  }) {
+    return BmrProfilesCompanion(
+      id: id ?? this.id,
+      bmr: bmr ?? this.bmr,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (bmr.present) {
+      map['bmr'] = Variable<double>(bmr.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BmrProfilesCompanion(')
+          ..write('id: $id, ')
+          ..write('bmr: $bmr, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $WeightLogsTable extends WeightLogs
     with TableInfo<$WeightLogsTable, WeightLog> {
   @override
@@ -4842,6 +6595,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SupplementsTable supplements = $SupplementsTable(this);
   late final $SupplementLogsTable supplementLogs = $SupplementLogsTable(this);
   late final $AlcoholLogsTable alcoholLogs = $AlcoholLogsTable(this);
+  late final $CaloriePlansTable caloriePlans = $CaloriePlansTable(this);
+  late final $CaloriePlanWeeksTable caloriePlanWeeks = $CaloriePlanWeeksTable(
+    this,
+  );
+  late final $DailyEnergyLogsTable dailyEnergyLogs = $DailyEnergyLogsTable(
+    this,
+  );
+  late final $BmrProfilesTable bmrProfiles = $BmrProfilesTable(this);
   late final $WeightLogsTable weightLogs = $WeightLogsTable(this);
   late final $BodyFatLogsTable bodyFatLogs = $BodyFatLogsTable(this);
   late final $ExpenseCategoriesTable expenseCategories =
@@ -4859,6 +6620,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     supplements,
     supplementLogs,
     alcoholLogs,
+    caloriePlans,
+    caloriePlanWeeks,
+    dailyEnergyLogs,
+    bmrProfiles,
     weightLogs,
     bodyFatLogs,
     expenseCategories,
@@ -7351,6 +9116,1151 @@ typedef $$AlcoholLogsTableProcessedTableManager =
       AlcoholLog,
       PrefetchHooks Function()
     >;
+typedef $$CaloriePlansTableCreateCompanionBuilder =
+    CaloriePlansCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<String> goalType,
+      required DateTime startDate,
+      required DateTime endDate,
+      Value<int?> targetDailyCalories,
+      Value<int?> targetWeeklyDeficit,
+      Value<bool> isActive,
+      Value<DateTime> createdAt,
+    });
+typedef $$CaloriePlansTableUpdateCompanionBuilder =
+    CaloriePlansCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> goalType,
+      Value<DateTime> startDate,
+      Value<DateTime> endDate,
+      Value<int?> targetDailyCalories,
+      Value<int?> targetWeeklyDeficit,
+      Value<bool> isActive,
+      Value<DateTime> createdAt,
+    });
+
+final class $$CaloriePlansTableReferences
+    extends BaseReferences<_$AppDatabase, $CaloriePlansTable, CaloriePlan> {
+  $$CaloriePlansTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$CaloriePlanWeeksTable, List<CaloriePlanWeek>>
+  _caloriePlanWeeksRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.caloriePlanWeeks,
+    aliasName: $_aliasNameGenerator(
+      db.caloriePlans.id,
+      db.caloriePlanWeeks.planId,
+    ),
+  );
+
+  $$CaloriePlanWeeksTableProcessedTableManager get caloriePlanWeeksRefs {
+    final manager = $$CaloriePlanWeeksTableTableManager(
+      $_db,
+      $_db.caloriePlanWeeks,
+    ).filter((f) => f.planId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _caloriePlanWeeksRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$CaloriePlansTableFilterComposer
+    extends Composer<_$AppDatabase, $CaloriePlansTable> {
+  $$CaloriePlansTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get goalType => $composableBuilder(
+    column: $table.goalType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endDate => $composableBuilder(
+    column: $table.endDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get targetDailyCalories => $composableBuilder(
+    column: $table.targetDailyCalories,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get targetWeeklyDeficit => $composableBuilder(
+    column: $table.targetWeeklyDeficit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> caloriePlanWeeksRefs(
+    Expression<bool> Function($$CaloriePlanWeeksTableFilterComposer f) f,
+  ) {
+    final $$CaloriePlanWeeksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.caloriePlanWeeks,
+      getReferencedColumn: (t) => t.planId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CaloriePlanWeeksTableFilterComposer(
+            $db: $db,
+            $table: $db.caloriePlanWeeks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$CaloriePlansTableOrderingComposer
+    extends Composer<_$AppDatabase, $CaloriePlansTable> {
+  $$CaloriePlansTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get goalType => $composableBuilder(
+    column: $table.goalType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endDate => $composableBuilder(
+    column: $table.endDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get targetDailyCalories => $composableBuilder(
+    column: $table.targetDailyCalories,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get targetWeeklyDeficit => $composableBuilder(
+    column: $table.targetWeeklyDeficit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CaloriePlansTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CaloriePlansTable> {
+  $$CaloriePlansTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get goalType =>
+      $composableBuilder(column: $table.goalType, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startDate =>
+      $composableBuilder(column: $table.startDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endDate =>
+      $composableBuilder(column: $table.endDate, builder: (column) => column);
+
+  GeneratedColumn<int> get targetDailyCalories => $composableBuilder(
+    column: $table.targetDailyCalories,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get targetWeeklyDeficit => $composableBuilder(
+    column: $table.targetWeeklyDeficit,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  Expression<T> caloriePlanWeeksRefs<T extends Object>(
+    Expression<T> Function($$CaloriePlanWeeksTableAnnotationComposer a) f,
+  ) {
+    final $$CaloriePlanWeeksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.caloriePlanWeeks,
+      getReferencedColumn: (t) => t.planId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CaloriePlanWeeksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.caloriePlanWeeks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$CaloriePlansTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CaloriePlansTable,
+          CaloriePlan,
+          $$CaloriePlansTableFilterComposer,
+          $$CaloriePlansTableOrderingComposer,
+          $$CaloriePlansTableAnnotationComposer,
+          $$CaloriePlansTableCreateCompanionBuilder,
+          $$CaloriePlansTableUpdateCompanionBuilder,
+          (CaloriePlan, $$CaloriePlansTableReferences),
+          CaloriePlan,
+          PrefetchHooks Function({bool caloriePlanWeeksRefs})
+        > {
+  $$CaloriePlansTableTableManager(_$AppDatabase db, $CaloriePlansTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CaloriePlansTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CaloriePlansTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CaloriePlansTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> goalType = const Value.absent(),
+                Value<DateTime> startDate = const Value.absent(),
+                Value<DateTime> endDate = const Value.absent(),
+                Value<int?> targetDailyCalories = const Value.absent(),
+                Value<int?> targetWeeklyDeficit = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => CaloriePlansCompanion(
+                id: id,
+                name: name,
+                goalType: goalType,
+                startDate: startDate,
+                endDate: endDate,
+                targetDailyCalories: targetDailyCalories,
+                targetWeeklyDeficit: targetWeeklyDeficit,
+                isActive: isActive,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<String> goalType = const Value.absent(),
+                required DateTime startDate,
+                required DateTime endDate,
+                Value<int?> targetDailyCalories = const Value.absent(),
+                Value<int?> targetWeeklyDeficit = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => CaloriePlansCompanion.insert(
+                id: id,
+                name: name,
+                goalType: goalType,
+                startDate: startDate,
+                endDate: endDate,
+                targetDailyCalories: targetDailyCalories,
+                targetWeeklyDeficit: targetWeeklyDeficit,
+                isActive: isActive,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CaloriePlansTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({caloriePlanWeeksRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (caloriePlanWeeksRefs) db.caloriePlanWeeks,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (caloriePlanWeeksRefs)
+                    await $_getPrefetchedData<
+                      CaloriePlan,
+                      $CaloriePlansTable,
+                      CaloriePlanWeek
+                    >(
+                      currentTable: table,
+                      referencedTable: $$CaloriePlansTableReferences
+                          ._caloriePlanWeeksRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$CaloriePlansTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).caloriePlanWeeksRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.planId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$CaloriePlansTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CaloriePlansTable,
+      CaloriePlan,
+      $$CaloriePlansTableFilterComposer,
+      $$CaloriePlansTableOrderingComposer,
+      $$CaloriePlansTableAnnotationComposer,
+      $$CaloriePlansTableCreateCompanionBuilder,
+      $$CaloriePlansTableUpdateCompanionBuilder,
+      (CaloriePlan, $$CaloriePlansTableReferences),
+      CaloriePlan,
+      PrefetchHooks Function({bool caloriePlanWeeksRefs})
+    >;
+typedef $$CaloriePlanWeeksTableCreateCompanionBuilder =
+    CaloriePlanWeeksCompanion Function({
+      Value<int> id,
+      required int planId,
+      required int weekNumber,
+      required DateTime weekStartDate,
+      required DateTime weekEndDate,
+      Value<int?> targetDailyCalories,
+      Value<int?> targetWeeklyDeficit,
+    });
+typedef $$CaloriePlanWeeksTableUpdateCompanionBuilder =
+    CaloriePlanWeeksCompanion Function({
+      Value<int> id,
+      Value<int> planId,
+      Value<int> weekNumber,
+      Value<DateTime> weekStartDate,
+      Value<DateTime> weekEndDate,
+      Value<int?> targetDailyCalories,
+      Value<int?> targetWeeklyDeficit,
+    });
+
+final class $$CaloriePlanWeeksTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $CaloriePlanWeeksTable, CaloriePlanWeek> {
+  $$CaloriePlanWeeksTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CaloriePlansTable _planIdTable(_$AppDatabase db) =>
+      db.caloriePlans.createAlias(
+        $_aliasNameGenerator(db.caloriePlanWeeks.planId, db.caloriePlans.id),
+      );
+
+  $$CaloriePlansTableProcessedTableManager get planId {
+    final $_column = $_itemColumn<int>('plan_id')!;
+
+    final manager = $$CaloriePlansTableTableManager(
+      $_db,
+      $_db.caloriePlans,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_planIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$CaloriePlanWeeksTableFilterComposer
+    extends Composer<_$AppDatabase, $CaloriePlanWeeksTable> {
+  $$CaloriePlanWeeksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get weekNumber => $composableBuilder(
+    column: $table.weekNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get weekStartDate => $composableBuilder(
+    column: $table.weekStartDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get weekEndDate => $composableBuilder(
+    column: $table.weekEndDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get targetDailyCalories => $composableBuilder(
+    column: $table.targetDailyCalories,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get targetWeeklyDeficit => $composableBuilder(
+    column: $table.targetWeeklyDeficit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CaloriePlansTableFilterComposer get planId {
+    final $$CaloriePlansTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.planId,
+      referencedTable: $db.caloriePlans,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CaloriePlansTableFilterComposer(
+            $db: $db,
+            $table: $db.caloriePlans,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CaloriePlanWeeksTableOrderingComposer
+    extends Composer<_$AppDatabase, $CaloriePlanWeeksTable> {
+  $$CaloriePlanWeeksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get weekNumber => $composableBuilder(
+    column: $table.weekNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get weekStartDate => $composableBuilder(
+    column: $table.weekStartDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get weekEndDate => $composableBuilder(
+    column: $table.weekEndDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get targetDailyCalories => $composableBuilder(
+    column: $table.targetDailyCalories,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get targetWeeklyDeficit => $composableBuilder(
+    column: $table.targetWeeklyDeficit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CaloriePlansTableOrderingComposer get planId {
+    final $$CaloriePlansTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.planId,
+      referencedTable: $db.caloriePlans,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CaloriePlansTableOrderingComposer(
+            $db: $db,
+            $table: $db.caloriePlans,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CaloriePlanWeeksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CaloriePlanWeeksTable> {
+  $$CaloriePlanWeeksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get weekNumber => $composableBuilder(
+    column: $table.weekNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get weekStartDate => $composableBuilder(
+    column: $table.weekStartDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get weekEndDate => $composableBuilder(
+    column: $table.weekEndDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get targetDailyCalories => $composableBuilder(
+    column: $table.targetDailyCalories,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get targetWeeklyDeficit => $composableBuilder(
+    column: $table.targetWeeklyDeficit,
+    builder: (column) => column,
+  );
+
+  $$CaloriePlansTableAnnotationComposer get planId {
+    final $$CaloriePlansTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.planId,
+      referencedTable: $db.caloriePlans,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CaloriePlansTableAnnotationComposer(
+            $db: $db,
+            $table: $db.caloriePlans,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CaloriePlanWeeksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CaloriePlanWeeksTable,
+          CaloriePlanWeek,
+          $$CaloriePlanWeeksTableFilterComposer,
+          $$CaloriePlanWeeksTableOrderingComposer,
+          $$CaloriePlanWeeksTableAnnotationComposer,
+          $$CaloriePlanWeeksTableCreateCompanionBuilder,
+          $$CaloriePlanWeeksTableUpdateCompanionBuilder,
+          (CaloriePlanWeek, $$CaloriePlanWeeksTableReferences),
+          CaloriePlanWeek,
+          PrefetchHooks Function({bool planId})
+        > {
+  $$CaloriePlanWeeksTableTableManager(
+    _$AppDatabase db,
+    $CaloriePlanWeeksTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CaloriePlanWeeksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CaloriePlanWeeksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CaloriePlanWeeksTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> planId = const Value.absent(),
+                Value<int> weekNumber = const Value.absent(),
+                Value<DateTime> weekStartDate = const Value.absent(),
+                Value<DateTime> weekEndDate = const Value.absent(),
+                Value<int?> targetDailyCalories = const Value.absent(),
+                Value<int?> targetWeeklyDeficit = const Value.absent(),
+              }) => CaloriePlanWeeksCompanion(
+                id: id,
+                planId: planId,
+                weekNumber: weekNumber,
+                weekStartDate: weekStartDate,
+                weekEndDate: weekEndDate,
+                targetDailyCalories: targetDailyCalories,
+                targetWeeklyDeficit: targetWeeklyDeficit,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int planId,
+                required int weekNumber,
+                required DateTime weekStartDate,
+                required DateTime weekEndDate,
+                Value<int?> targetDailyCalories = const Value.absent(),
+                Value<int?> targetWeeklyDeficit = const Value.absent(),
+              }) => CaloriePlanWeeksCompanion.insert(
+                id: id,
+                planId: planId,
+                weekNumber: weekNumber,
+                weekStartDate: weekStartDate,
+                weekEndDate: weekEndDate,
+                targetDailyCalories: targetDailyCalories,
+                targetWeeklyDeficit: targetWeeklyDeficit,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CaloriePlanWeeksTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({planId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (planId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.planId,
+                                referencedTable:
+                                    $$CaloriePlanWeeksTableReferences
+                                        ._planIdTable(db),
+                                referencedColumn:
+                                    $$CaloriePlanWeeksTableReferences
+                                        ._planIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$CaloriePlanWeeksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CaloriePlanWeeksTable,
+      CaloriePlanWeek,
+      $$CaloriePlanWeeksTableFilterComposer,
+      $$CaloriePlanWeeksTableOrderingComposer,
+      $$CaloriePlanWeeksTableAnnotationComposer,
+      $$CaloriePlanWeeksTableCreateCompanionBuilder,
+      $$CaloriePlanWeeksTableUpdateCompanionBuilder,
+      (CaloriePlanWeek, $$CaloriePlanWeeksTableReferences),
+      CaloriePlanWeek,
+      PrefetchHooks Function({bool planId})
+    >;
+typedef $$DailyEnergyLogsTableCreateCompanionBuilder =
+    DailyEnergyLogsCompanion Function({
+      Value<int> id,
+      required DateTime logDate,
+      Value<int> steps,
+      required double caloriesOut,
+      Value<String> source,
+      Value<String?> notes,
+      Value<DateTime> updatedAt,
+    });
+typedef $$DailyEnergyLogsTableUpdateCompanionBuilder =
+    DailyEnergyLogsCompanion Function({
+      Value<int> id,
+      Value<DateTime> logDate,
+      Value<int> steps,
+      Value<double> caloriesOut,
+      Value<String> source,
+      Value<String?> notes,
+      Value<DateTime> updatedAt,
+    });
+
+class $$DailyEnergyLogsTableFilterComposer
+    extends Composer<_$AppDatabase, $DailyEnergyLogsTable> {
+  $$DailyEnergyLogsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get logDate => $composableBuilder(
+    column: $table.logDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get steps => $composableBuilder(
+    column: $table.steps,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get caloriesOut => $composableBuilder(
+    column: $table.caloriesOut,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DailyEnergyLogsTableOrderingComposer
+    extends Composer<_$AppDatabase, $DailyEnergyLogsTable> {
+  $$DailyEnergyLogsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get logDate => $composableBuilder(
+    column: $table.logDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get steps => $composableBuilder(
+    column: $table.steps,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get caloriesOut => $composableBuilder(
+    column: $table.caloriesOut,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DailyEnergyLogsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DailyEnergyLogsTable> {
+  $$DailyEnergyLogsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get logDate =>
+      $composableBuilder(column: $table.logDate, builder: (column) => column);
+
+  GeneratedColumn<int> get steps =>
+      $composableBuilder(column: $table.steps, builder: (column) => column);
+
+  GeneratedColumn<double> get caloriesOut => $composableBuilder(
+    column: $table.caloriesOut,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$DailyEnergyLogsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DailyEnergyLogsTable,
+          DailyEnergyLog,
+          $$DailyEnergyLogsTableFilterComposer,
+          $$DailyEnergyLogsTableOrderingComposer,
+          $$DailyEnergyLogsTableAnnotationComposer,
+          $$DailyEnergyLogsTableCreateCompanionBuilder,
+          $$DailyEnergyLogsTableUpdateCompanionBuilder,
+          (
+            DailyEnergyLog,
+            BaseReferences<
+              _$AppDatabase,
+              $DailyEnergyLogsTable,
+              DailyEnergyLog
+            >,
+          ),
+          DailyEnergyLog,
+          PrefetchHooks Function()
+        > {
+  $$DailyEnergyLogsTableTableManager(
+    _$AppDatabase db,
+    $DailyEnergyLogsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DailyEnergyLogsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DailyEnergyLogsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DailyEnergyLogsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<DateTime> logDate = const Value.absent(),
+                Value<int> steps = const Value.absent(),
+                Value<double> caloriesOut = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => DailyEnergyLogsCompanion(
+                id: id,
+                logDate: logDate,
+                steps: steps,
+                caloriesOut: caloriesOut,
+                source: source,
+                notes: notes,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required DateTime logDate,
+                Value<int> steps = const Value.absent(),
+                required double caloriesOut,
+                Value<String> source = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => DailyEnergyLogsCompanion.insert(
+                id: id,
+                logDate: logDate,
+                steps: steps,
+                caloriesOut: caloriesOut,
+                source: source,
+                notes: notes,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DailyEnergyLogsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DailyEnergyLogsTable,
+      DailyEnergyLog,
+      $$DailyEnergyLogsTableFilterComposer,
+      $$DailyEnergyLogsTableOrderingComposer,
+      $$DailyEnergyLogsTableAnnotationComposer,
+      $$DailyEnergyLogsTableCreateCompanionBuilder,
+      $$DailyEnergyLogsTableUpdateCompanionBuilder,
+      (
+        DailyEnergyLog,
+        BaseReferences<_$AppDatabase, $DailyEnergyLogsTable, DailyEnergyLog>,
+      ),
+      DailyEnergyLog,
+      PrefetchHooks Function()
+    >;
+typedef $$BmrProfilesTableCreateCompanionBuilder =
+    BmrProfilesCompanion Function({
+      Value<int> id,
+      required double bmr,
+      Value<DateTime> updatedAt,
+    });
+typedef $$BmrProfilesTableUpdateCompanionBuilder =
+    BmrProfilesCompanion Function({
+      Value<int> id,
+      Value<double> bmr,
+      Value<DateTime> updatedAt,
+    });
+
+class $$BmrProfilesTableFilterComposer
+    extends Composer<_$AppDatabase, $BmrProfilesTable> {
+  $$BmrProfilesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get bmr => $composableBuilder(
+    column: $table.bmr,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$BmrProfilesTableOrderingComposer
+    extends Composer<_$AppDatabase, $BmrProfilesTable> {
+  $$BmrProfilesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get bmr => $composableBuilder(
+    column: $table.bmr,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$BmrProfilesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $BmrProfilesTable> {
+  $$BmrProfilesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<double> get bmr =>
+      $composableBuilder(column: $table.bmr, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$BmrProfilesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $BmrProfilesTable,
+          BmrProfile,
+          $$BmrProfilesTableFilterComposer,
+          $$BmrProfilesTableOrderingComposer,
+          $$BmrProfilesTableAnnotationComposer,
+          $$BmrProfilesTableCreateCompanionBuilder,
+          $$BmrProfilesTableUpdateCompanionBuilder,
+          (
+            BmrProfile,
+            BaseReferences<_$AppDatabase, $BmrProfilesTable, BmrProfile>,
+          ),
+          BmrProfile,
+          PrefetchHooks Function()
+        > {
+  $$BmrProfilesTableTableManager(_$AppDatabase db, $BmrProfilesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$BmrProfilesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$BmrProfilesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$BmrProfilesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<double> bmr = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) =>
+                  BmrProfilesCompanion(id: id, bmr: bmr, updatedAt: updatedAt),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required double bmr,
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => BmrProfilesCompanion.insert(
+                id: id,
+                bmr: bmr,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$BmrProfilesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $BmrProfilesTable,
+      BmrProfile,
+      $$BmrProfilesTableFilterComposer,
+      $$BmrProfilesTableOrderingComposer,
+      $$BmrProfilesTableAnnotationComposer,
+      $$BmrProfilesTableCreateCompanionBuilder,
+      $$BmrProfilesTableUpdateCompanionBuilder,
+      (
+        BmrProfile,
+        BaseReferences<_$AppDatabase, $BmrProfilesTable, BmrProfile>,
+      ),
+      BmrProfile,
+      PrefetchHooks Function()
+    >;
 typedef $$WeightLogsTableCreateCompanionBuilder =
     WeightLogsCompanion Function({
       Value<int> id,
@@ -8476,6 +11386,14 @@ class $AppDatabaseManager {
       $$SupplementLogsTableTableManager(_db, _db.supplementLogs);
   $$AlcoholLogsTableTableManager get alcoholLogs =>
       $$AlcoholLogsTableTableManager(_db, _db.alcoholLogs);
+  $$CaloriePlansTableTableManager get caloriePlans =>
+      $$CaloriePlansTableTableManager(_db, _db.caloriePlans);
+  $$CaloriePlanWeeksTableTableManager get caloriePlanWeeks =>
+      $$CaloriePlanWeeksTableTableManager(_db, _db.caloriePlanWeeks);
+  $$DailyEnergyLogsTableTableManager get dailyEnergyLogs =>
+      $$DailyEnergyLogsTableTableManager(_db, _db.dailyEnergyLogs);
+  $$BmrProfilesTableTableManager get bmrProfiles =>
+      $$BmrProfilesTableTableManager(_db, _db.bmrProfiles);
   $$WeightLogsTableTableManager get weightLogs =>
       $$WeightLogsTableTableManager(_db, _db.weightLogs);
   $$BodyFatLogsTableTableManager get bodyFatLogs =>
